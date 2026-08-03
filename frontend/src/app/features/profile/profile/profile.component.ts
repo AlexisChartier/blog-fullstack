@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, Data } from '@angular/router';
 import { NgIf, NgFor, DatePipe } from '@angular/common';
 import { UserService } from '../../../core/services/user.service';
 import { User, Post } from '../../../core/models';
@@ -20,9 +20,13 @@ export class ProfileComponent implements OnInit {
   loading = signal(true);
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
-      const username = params.get('username');
-      if (username) this.loadProfile(username);
+    this.route.data.subscribe((data: Data) => {
+      if (data['user']) {
+        const user = data['user'] as User;
+        this.user.set(user);
+        this.posts.set(user.posts ?? []);
+        this.loading.set(false);
+      }
     });
   }
 

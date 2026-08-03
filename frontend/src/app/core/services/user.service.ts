@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Post, User } from '../models';
 import { API_URL } from '../tokens/api-url.token';
+import { map } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -9,7 +10,9 @@ export class UserService {
   private apiUrl = inject(API_URL);
 
   getProfile(username: string) {
-    return this.http.get<User>(`${this.apiUrl}/users/${username}`);
+    return this.http.get<{ data: User }>(`${this.apiUrl}/users/${username}`).pipe(
+      map(res => res.data),
+    );
   }
 
   getUserPosts(username: string, page = 1) {

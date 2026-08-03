@@ -1,10 +1,11 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, Data } from '@angular/router';
 import { NgIf, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BlogService } from '../../../core/services/blog.service';
-import { Post, Category, Tag } from '../../../core/models';
+import { Post, Category, Tag, Paginated } from '../../../core/models';
 import { DatePipe } from '@angular/common';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-post-list',
@@ -32,17 +33,28 @@ export class PostListComponent implements OnInit {
   private searchTimeout: any;
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
-      if (params['search']) {
-        this.currentFilter.set({ search: params['search'] });
-        this.pageTitle.set(`Search: "${params['search']}"`);
-        this.loadPosts();
+    this.route.data.subscribe((data: Data) => {
+      if (data['posts']) {
+        const res = data['posts'] as Paginated<Post>;
+        this.posts.set(res.data);
+        this.currentPage.set(res.current_page);
+        this.lastPage.set(res.last_page);
+        this.total.set(res.total);
+        this.loading.set(false);
       }
-    });
+      if (data['categories']) {
+        this.categories.set(data['categories'] as Category[]);
+      }
+      if (data['tags']) {
+        this.tags.set(data['tags'] as Tag[]);
+      }
 
-    this.route.paramMap.subscribe(params => {
-      if (params.has('slug')) {
-        const slug = params.get('slug')!;
+      const search = this.route.snapshot.queryParams['search'];
+      const slug = this.route.snapshot.paramMap.get('slug');
+      if (search) {
+        this.currentFilter.set({ search });
+        this.pageTitle.set(`Search: "${search}"`);
+      } else if (slug) {
         if (this.route.snapshot.url[0]?.path === 'category') {
           this.currentFilter.set({ category: slug });
           this.pageTitle.set(`Category: ${slug.replace(/-/g, ' ')}`);
@@ -50,16 +62,8 @@ export class PostListComponent implements OnInit {
           this.currentFilter.set({ tag: slug });
           this.pageTitle.set(`#${slug}`);
         }
-        this.loadPosts();
-      } else if (!this.route.snapshot.queryParams['search']) {
-        this.currentFilter.set({});
-        this.pageTitle.set('Latest Posts');
-        this.loadPosts();
       }
     });
-
-    this.loadCategories();
-    this.loadTags();
   }
 
   loadPosts(page = 1) {
@@ -74,14 +78,6 @@ export class PostListComponent implements OnInit {
       },
       error: () => this.loading.set(false),
     });
-  }
-
-  loadCategories() {
-    this.blogService.getCategories().subscribe(cats => this.categories.set(cats));
-  }
-
-  loadTags() {
-    this.blogService.getTags().subscribe(tags => this.tags.set(tags));
   }
 
   nextPage() {

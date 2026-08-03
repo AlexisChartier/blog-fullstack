@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink, Data } from '@angular/router';
 import { NgIf, NgFor, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
@@ -29,9 +29,14 @@ export class PostDetailComponent implements OnInit {
   copied = signal(false);
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
-      const slug = params.get('slug');
-      if (slug) this.loadPost(slug);
+    this.route.data.subscribe((data: Data) => {
+      if (data['post']) {
+        const post = data['post'] as Post;
+        this.post.set(post);
+        this.title.setTitle(`${post.title} — DevBlog`);
+        this.meta.updateTag({ name: 'description', content: post.excerpt ?? post.title });
+        this.loading.set(false);
+      }
     });
   }
 
@@ -113,9 +118,5 @@ export class PostDetailComponent implements OnInit {
     const content = this.post()?.content ?? '';
     const words = content.split(/\s+/).length;
     return Math.ceil(words / 200);
-  }
-
-  get topLevelComments(): Comment[] {
-    return this.post()?.comments?.filter(c => !c.replies || true) ?? [];
   }
 }

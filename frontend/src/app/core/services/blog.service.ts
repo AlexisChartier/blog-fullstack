@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Category, Comment, Paginated, Post, Tag } from '../models';
 import { API_URL } from '../tokens/api-url.token';
+import { map } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class BlogService {
@@ -18,15 +19,21 @@ export class BlogService {
   }
 
   getPost(slug: string) {
-    return this.http.get<Post>(`${this.apiUrl}/posts/${slug}`);
+    return this.http.get<{ data: Post }>(`${this.apiUrl}/posts/${slug}`).pipe(
+      map(res => res.data),
+    );
   }
 
   getCategories() {
-    return this.http.get<Category[]>(`${this.apiUrl}/categories`);
+    return this.http.get<{ data: Category[] }>(`${this.apiUrl}/categories`).pipe(
+      map(res => res.data),
+    );
   }
 
   getTags() {
-    return this.http.get<Tag[]>(`${this.apiUrl}/tags`);
+    return this.http.get<{ data: Tag[] }>(`${this.apiUrl}/tags`).pipe(
+      map(res => res.data),
+    );
   }
 
   getPostsByCategory(slug: string, page = 1) {

@@ -1,25 +1,47 @@
 import { Routes } from '@angular/router';
 import { authGuard, authorGuard } from './core/guards/auth.guard';
+import { postsResolver, categoriesResolver, tagsResolver, postResolver, profileResolver } from './core/resolvers/blog.resolvers';
 
 export const routes: Routes = [
   {
     path: '',
+    resolve: {
+      posts: postsResolver,
+      categories: categoriesResolver,
+      tags: tagsResolver,
+    },
     loadComponent: () => import('./features/blog/post-list/post-list.component').then(m => m.PostListComponent),
   },
   {
     path: 'post/:slug',
+    resolve: {
+      post: postResolver,
+    },
     loadComponent: () => import('./features/blog/post-detail/post-detail.component').then(m => m.PostDetailComponent),
   },
   {
     path: 'category/:slug',
+    resolve: {
+      posts: postsResolver,
+      categories: categoriesResolver,
+      tags: tagsResolver,
+    },
     loadComponent: () => import('./features/blog/post-list/post-list.component').then(m => m.PostListComponent),
   },
   {
     path: 'tag/:slug',
+    resolve: {
+      posts: postsResolver,
+      categories: categoriesResolver,
+      tags: tagsResolver,
+    },
     loadComponent: () => import('./features/blog/post-list/post-list.component').then(m => m.PostListComponent),
   },
   {
     path: 'profile/:username',
+    resolve: {
+      user: profileResolver,
+    },
     loadComponent: () => import('./features/profile/profile/profile.component').then(m => m.ProfileComponent),
   },
   {
@@ -52,6 +74,11 @@ export const routes: Routes = [
   },
   {
     path: '**',
+    resolve: {
+      posts: postsResolver,
+      categories: categoriesResolver,
+      tags: tagsResolver,
+    },
     loadComponent: () => import('./features/blog/post-list/post-list.component').then(m => m.PostListComponent),
   },
 ];
