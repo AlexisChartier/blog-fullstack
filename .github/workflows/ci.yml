@@ -123,7 +123,6 @@ jobs:
     name: SonarQube Analysis
     runs-on: ubuntu-latest
     needs: [backend, frontend]
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
 
     steps:
       - uses: actions/checkout@v4
@@ -141,4 +140,3 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        continue-on-error: true
