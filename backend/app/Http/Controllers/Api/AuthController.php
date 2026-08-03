@@ -8,7 +8,6 @@ use App\Http\Requests\Api\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -18,13 +17,12 @@ class AuthController extends Controller
         $user = User::create($request->validated());
         $user->assignRole('reader');
 
-        Auth::login($user);
-
-        $request->session()->regenerate();
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'message' => 'Registration successful',
             'user' => $user->load('roles'),
+            'token' => $token,
         ], 201);
     }
 
@@ -38,20 +36,18 @@ class AuthController extends Controller
             ], 422);
         }
 
-        Auth::login($user);
-        $request->session()->regenerate();
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'message' => 'Login successful',
             'user' => $user->load('roles'),
+            'token' => $token,
         ]);
     }
 
     public function logout(Request $request): JsonResponse
     {
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out']);
     }

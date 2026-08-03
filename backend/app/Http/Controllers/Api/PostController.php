@@ -59,7 +59,7 @@ class PostController extends Controller
 
         return response()->json([
             'message' => 'Post created',
-            'post' => new PostResource($post->load(['categories', 'tags'])),
+            'post' => new PostResource($post->load(['author', 'categories', 'tags'])),
         ], 201);
     }
 
@@ -78,7 +78,7 @@ class PostController extends Controller
 
         return response()->json([
             'message' => 'Post updated',
-            'post' => new PostResource($post->load(['categories', 'tags'])),
+            'post' => new PostResource($post->load(['author', 'categories', 'tags'])),
         ]);
     }
 

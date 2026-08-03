@@ -18,7 +18,7 @@ class UserResource extends JsonResource
             'bio' => $this->bio,
             'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')),
             'posts' => PostResource::collection($this->whenLoaded('posts')),
-            'created_at' => $this->created_at->toISOString(),
+            'created_at' => $this->created_at?->toISOString(),
         ];
     }
 }

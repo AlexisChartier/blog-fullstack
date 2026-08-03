@@ -67,10 +67,12 @@ class Post extends Model
             return $query;
         }
 
+        $likeOperator = config('database.default') === 'pgsql' ? 'ILIKE' : 'LIKE';
+
         return $query->where(fn (Builder $q) => $q
-            ->where('title', 'ILIKE', "%{$term}%")
-            ->orWhere('excerpt', 'ILIKE', "%{$term}%")
-            ->orWhere('content', 'ILIKE', "%{$term}%")
+            ->where('title', $likeOperator, "%{$term}%")
+            ->orWhere('excerpt', $likeOperator, "%{$term}%")
+            ->orWhere('content', $likeOperator, "%{$term}%")
         );
     }
 }
