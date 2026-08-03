@@ -47,6 +47,7 @@ class PostController extends Controller
 
     public function store(StorePostRequest $request): JsonResponse
     {
+        /** @var Post $post */
         $post = $request->user()->posts()->create($request->except(['categories', 'tags']));
 
         if ($categories = $request->input('categories')) {

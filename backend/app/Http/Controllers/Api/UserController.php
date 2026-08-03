@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PostResource;
 use App\Http\Resources\UserResource;
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -22,8 +24,8 @@ class UserController extends Controller
     {
         $user = User::where('username', $username)->firstOrFail();
 
-        return \App\Http\Resources\PostResource::collection(
-            $user->posts()->published()->latest('published_at')->paginate(9)
+        return PostResource::collection(
+            Post::where('author_id', $user->id)->published()->latest('published_at')->paginate(9)
         );
     }
 }
