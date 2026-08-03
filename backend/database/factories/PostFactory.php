@@ -32,7 +32,7 @@ class PostFactory extends Factory
         ];
         $suffixes = ['', ' in 2026', ': A Practical Guide', ' for Beginners', ' Best Practices', ' from Scratch', ' Explained', ': Tips and Tricks'];
 
-        $title = fake()->randomElement($prefixes) . ' ' . fake()->randomElement($topics) . fake()->randomElement($suffixes);
+        $title = fake()->randomElement($prefixes).' '.fake()->randomElement($topics).fake()->randomElement($suffixes);
 
         $paragraphCount = rand(4, 8);
 
