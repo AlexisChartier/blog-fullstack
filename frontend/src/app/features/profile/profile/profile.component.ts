@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgIf, NgFor, DatePipe } from '@angular/common';
 import { UserService } from '../../../core/services/user.service';
 import { User, Post } from '../../../core/models';
@@ -13,6 +13,7 @@ import { User, Post } from '../../../core/models';
 export class ProfileComponent implements OnInit {
   private userService = inject(UserService);
   private route = inject(ActivatedRoute);
+  router = inject(Router);
 
   user = signal<User | null>(null);
   posts = signal<Post[]>([]);

@@ -1,39 +1,107 @@
-<nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+<nav class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 backdrop-blur-md bg-opacity-90 dark:bg-opacity-90">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between h-16">
-      <div class="flex items-center space-x-8">
-        <a routerLink="/" class="text-xl font-bold text-gray-900 no-underline hover:text-primary-600">
-          Blog
+      <!-- Logo & Desktop Nav -->
+      <div class="flex items-center space-x-6">
+        <a routerLink="/" class="flex items-center space-x-2 text-xl font-bold text-gray-900 dark:text-white no-underline hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+          <span class="inline-flex items-center justify-center w-8 h-8 bg-primary-600 text-white rounded-lg font-extrabold text-sm">DB</span>
+          <span class="hidden sm:inline">DevBlog</span>
         </a>
-        <div class="hidden sm:flex sm:space-x-4">
-          <a routerLink="/" routerLinkActive="text-primary-600" class="text-gray-600 hover:text-primary-600 no-underline">Home</a>
-          <a routerLink="/admin/posts" *ngIf="isAuthor" routerLinkActive="text-primary-600" class="text-gray-600 hover:text-primary-600 no-underline">Dashboard</a>
+        <div class="hidden md:flex md:space-x-1">
+          <a routerLink="/" routerLinkActive="text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20" class="px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Home</a>
+          <a routerLink="/admin/posts" *ngIf="isAuthor" routerLinkActive="text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20" class="px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Dashboard</a>
         </div>
       </div>
 
-      <div class="flex items-center space-x-4">
+      <!-- Desktop Actions -->
+      <div class="flex items-center space-x-3">
+        <button (click)="toggleDarkMode()" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-400 transition-colors" title="Toggle dark mode">
+          <svg *ngIf="!darkMode()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          <svg *ngIf="darkMode()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        </button>
+
         <ng-container *ngIf="isAuthenticated(); else notAuth">
-          <a *ngIf="isAuthor" routerLink="/admin/posts/new" class="btn-primary text-sm">New Post</a>
-          <a [routerLink]="['/profile', user()?.username]" class="text-sm text-gray-600 hover:text-primary-600 no-underline">
-            {{ user()?.name }}
+          <a *ngIf="isAuthor" routerLink="/admin/posts/new" class="hidden sm:inline-flex btn-primary text-sm">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            New Post
           </a>
-          <button (click)="logout()" class="btn-secondary text-sm">Logout</button>
+
+          <div class="relative">
+            <button (click)="toggleProfile()" class="flex items-center space-x-2 p-1 pr-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                {{ user()?.name?.charAt(0) || 'U' }}
+              </div>
+              <span class="hidden sm:inline text-sm font-medium text-gray-700 dark:text-gray-200">{{ user()?.name }}</span>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+
+            <div *ngIf="profileOpen()" (click)="closeMenus()" class="fixed inset-0 z-40"></div>
+            <div *ngIf="profileOpen()" class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 py-2 z-50 animate-fade-in">
+              <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-800">
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ user()?.name }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ user()?.email }}</p>
+              </div>
+              <a [routerLink]="['/profile', user()?.username]" (click)="closeMenus()" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline transition-colors">
+                <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                My Profile
+              </a>
+              <a routerLink="/settings/profile" (click)="closeMenus()" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline transition-colors">
+                <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.156-.709-.271-2.11.884-2.811a1.724 1.724 0 002.573-1.066c.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.156.709 2.882-.217 2.882 1.268a2.57 2.57 0 00-1.385 2.238 1.724 1.724 0 002.573-1.066c.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.156.709 2.882-.217 2.882 1.268 0 .322-.045.634-.13.935l-.013.013A2.57 2.57 0 0021.999 12a2.57 2.57 0 002.573-1.066c.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573-1.066c1.156-.709 2.882.217 2.882-1.268 0-.322-.045-.634-.13-.935"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Settings
+              </a>
+              <a *ngIf="isAuthor" routerLink="/admin/posts" (click)="closeMenus()" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline transition-colors">
+                <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                My Posts
+              </a>
+              <div class="border-t border-gray-100 dark:border-gray-800 mt-1"></div>
+              <button (click)="logout()" class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                Logout
+              </button>
+            </div>
+          </div>
         </ng-container>
+
         <ng-template #notAuth>
-          <a routerLink="/login" class="text-sm text-gray-600 hover:text-primary-600 no-underline">Login</a>
-          <a routerLink="/register" class="btn-primary text-sm">Register</a>
+          <a routerLink="/login" class="hidden sm:inline text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 no-underline transition-colors">Login</a>
+          <a routerLink="/register" class="btn-primary text-sm">Get Started</a>
         </ng-template>
+
+        <button (click)="toggleMenu()" class="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-400 transition-colors">
+          <svg *ngIf="!menuOpen()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <svg *ngIf="menuOpen()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div *ngIf="menuOpen()" class="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 animate-fade-in">
+    <div class="px-4 py-3 space-y-1">
+      <a routerLink="/" (click)="closeMenus()" class="block px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Home</a>
+      <a *ngIf="isAuthor" routerLink="/admin/posts" (click)="closeMenus()" class="block px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Dashboard</a>
+      <a *ngIf="isAuthor" routerLink="/admin/posts/new" (click)="closeMenus()" class="block px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">New Post</a>
+      <a *ngIf="!isAuthenticated()" routerLink="/login" (click)="closeMenus()" class="block px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Login</a>
     </div>
   </div>
 </nav>
 
-<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-4rem)]">
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-4rem)]">
   <router-outlet></router-outlet>
 </main>
 
-<footer class="bg-white border-t border-gray-200 mt-auto">
-  <div class="max-w-6xl mx-auto px-4 py-6 text-center text-gray-500 text-sm">
-  Multi-User Blogging System &mdash; Angular 17 + Laravel 11 + PostgreSQL + Redis
+<footer class="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-auto">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 bg-primary-600 text-white rounded-lg font-extrabold text-xs">DB</span>
+        <span class="text-sm font-bold text-gray-900 dark:text-white">DevBlog</span>
+      </div>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Angular 17 + Laravel 11 + PostgreSQL + Redis</p>
+      <div class="flex items-center space-x-4 text-sm text-gray-400 dark:text-gray-500">
+        <a routerLink="/" class="hover:text-primary-600 dark:hover:text-primary-400 no-underline transition-colors">Home</a>
+        <a *ngIf="!isAuthenticated()" routerLink="/login" class="hover:text-primary-600 dark:hover:text-primary-400 no-underline transition-colors">Login</a>
+      </div>
+    </div>
   </div>
 </footer>

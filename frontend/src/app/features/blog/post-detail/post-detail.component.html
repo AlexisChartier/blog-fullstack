@@ -1,62 +1,174 @@
-<div *ngIf="loading()" class="text-center py-12 text-gray-500">Loading...</div>
+<div *ngIf="loading()" class="space-y-4">
+  <div class="skeleton h-12 w-3/4"></div>
+  <div class="skeleton h-4 w-1/2"></div>
+  <div class="skeleton h-4 w-full"></div>
+  <div class="skeleton h-4 w-5/6"></div>
+  <div class="skeleton h-4 w-full"></div>
+  <div class="skeleton h-4 w-3/4"></div>
+</div>
 
-<article *ngIf="post() as p" class="space-y-6">
+<article *ngIf="post() as p" class="max-w-3xl mx-auto space-y-8 animate-fade-in">
   <header class="space-y-4">
-    <h1 class="text-4xl font-bold text-gray-900">{{ p.title }}</h1>
-    <div class="flex items-center gap-4 text-sm text-gray-500">
-      <a [routerLink]="['/profile', p.author?.username]" class="hover:text-primary-600 no-underline font-medium text-gray-700">
-        {{ p.author?.name }}
-      </a>
-      <span>{{ p.published_at | date: 'longDate' }}</span>
-    </div>
     <div class="flex flex-wrap gap-2">
-      <span *ngFor="let cat of p.categories" class="badge-primary">
-        <a [routerLink]="['/category', cat.slug]" class="no-underline text-primary-800">{{ cat.name }}</a>
-      </span>
-      <span *ngFor="let tag of p.tags" class="badge-gray">
-        <a [routerLink]="['/tag', tag.slug]" class="no-underline text-gray-600"><span>&#35;</span>{{ tag.name }}</a>
-      </span>
+      <a *ngFor="let cat of p.categories" [routerLink]="['/category', cat.slug]" class="badge-primary no-underline hover:bg-primary-200 dark:hover:bg-primary-800/50 transition-colors">
+        {{ cat.name }}
+      </a>
     </div>
-  </header>
 
-  <div class="prose max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">{{ p.content }}</div>
+    <h1 class="text-4xl font-bold text-gray-900 dark:text-white leading-tight">{{ p.title }}</h1>
 
-  <section class="pt-8 border-t border-gray-200">
-    <h2 class="text-2xl font-bold text-gray-900 mb-6">Comments ({{ p.comments?.length || 0 }})</h2>
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div class="flex items-center gap-3">
+        <a [routerLink]="['/profile', p.author?.username]" class="flex items-center gap-3 no-underline group">
+          <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+            {{ p.author?.name?.charAt(0) || 'A' }}
+          </div>
+          <div>
+            <p class="font-medium text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors text-sm">{{ p.author?.name }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ p.published_at | date: 'MMM d, y' }} · {{ readingTime }} min read</p>
+          </div>
+        </a>
+      </div>
 
-    <div *ngIf="auth.isAuthenticated()" class="mb-8">
-      <textarea
-        [(ngModel)]="newComment"
-        class="input mb-2"
-        rows="3"
-        placeholder="Write a comment..."
-      ></textarea>
-      <button (click)="submitComment()" [disabled]="commenting() || !newComment().trim()"
-              class="btn-primary disabled:opacity-50">
-        Post Comment
+      <button (click)="sharePost()" class="btn-ghost text-sm">
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+        <span *ngIf="!copied()">Share</span>
+        <span *ngIf="copied()" class="text-green-600 dark:text-green-400">Copied!</span>
       </button>
     </div>
 
-    <div *ngIf="!auth.isAuthenticated()" class="mb-8 p-4 bg-gray-50 rounded-md text-center text-gray-600">
-      <a routerLink="/login" class="text-primary-600 font-medium">Login</a> to leave a comment.
+    <div class="flex flex-wrap gap-2 pt-2">
+      <a *ngFor="let tag of p.tags" [routerLink]="['/tag', tag.slug]" class="badge-gray no-underline hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+        <span class="text-gray-400">#</span>{{ tag.name }}
+      </a>
+    </div>
+  </header>
+
+  <div class="prose-content max-w-none text-lg whitespace-pre-wrap">{{ p.content }}</div>
+
+  <!-- Comments section -->
+  <section class="pt-8 border-t border-gray-200 dark:border-gray-800">
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+      Comments
+      <span class="text-gray-400 dark:text-gray-600 text-lg font-normal">({{ p.comments?.length || 0 }})</span>
+    </h2>
+
+    <!-- Comment form -->
+    <div *ngIf="auth.isAuthenticated()" class="mb-8">
+      <div class="flex gap-3">
+        <div class="w-9 h-9 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+          {{ auth.user()?.name?.charAt(0) || 'U' }}
+        </div>
+        <div class="flex-1">
+          <textarea
+            [(ngModel)]="newComment"
+            class="input resize-none"
+            rows="3"
+            placeholder="Share your thoughts..."
+          ></textarea>
+          <div class="flex justify-end mt-2">
+            <button (click)="submitComment()" [disabled]="commenting() || !newComment().trim()"
+                    class="btn-primary text-sm disabled:opacity-50">
+              <span *ngIf="!commenting()">Post Comment</span>
+              <span *ngIf="commenting()">Posting...</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <div *ngIf="!auth.isAuthenticated()" class="mb-8 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl text-center">
+      <p class="text-gray-600 dark:text-gray-400">
+        <a routerLink="/login" class="link font-medium">Login</a> to join the conversation.
+      </p>
+    </div>
+
+    <!-- Comments list -->
     <div class="space-y-4">
-      <div *ngFor="let comment of p.comments" class="bg-gray-50 rounded-lg p-4">
-        <div class="flex items-center gap-2 mb-2">
-          <a [routerLink]="['/profile', comment.user.username]" class="font-medium text-gray-800 hover:text-primary-600 no-underline">
-            {{ comment.user.name }}
+      <div *ngFor="let comment of p.comments" class="space-y-3">
+        <div class="flex gap-3">
+          <a [routerLink]="['/profile', comment.user.username]" class="no-underline">
+            <div class="w-9 h-9 bg-gradient-to-br from-primary-400 to-accent-400 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+              {{ comment.user.name.charAt(0) }}
+            </div>
           </a>
-          <span class="text-sm text-gray-500">{{ comment.created_at | date: 'short' }}</span>
+          <div class="flex-1">
+            <div class="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <a [routerLink]="['/profile', comment.user.username]" class="font-medium text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 no-underline text-sm transition-colors">
+                  {{ comment.user.name }}
+                </a>
+                <span class="text-xs text-gray-400 dark:text-gray-600">{{ comment.created_at | date: 'short' }}</span>
+              </div>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">{{ comment.content }}</p>
+            </div>
+
+            <div class="flex items-center gap-3 mt-1.5 ml-2">
+              <button *ngIf="auth.isAuthenticated()" (click)="startReply(comment.id)" class="text-xs text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors no-underline">
+                Reply
+              </button>
+              <button *ngIf="auth.user()?.id === comment.user.id" (click)="deleteComment(comment.id)" class="text-xs text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors no-underline">
+                Delete
+              </button>
+            </div>
+
+            <!-- Reply form -->
+            <div *ngIf="replyingTo() === comment.id" class="mt-3 animate-fade-in">
+              <div class="flex gap-2">
+                <textarea
+                  [(ngModel)]="replyContent"
+                  class="input text-sm resize-none"
+                  rows="2"
+                  placeholder="Write a reply..."
+                ></textarea>
+              </div>
+              <div class="flex gap-2 mt-2">
+                <button (click)="submitReply(comment.id)" [disabled]="commenting() || !replyContent().trim()" class="btn-primary text-xs disabled:opacity-50">
+                  Reply
+                </button>
+                <button (click)="cancelReply()" class="btn-ghost text-xs">Cancel</button>
+              </div>
+            </div>
+
+            <!-- Nested replies -->
+            <div *ngIf="comment.replies?.length" class="mt-3 space-y-3 pl-2 border-l-2 border-gray-100 dark:border-gray-800">
+              <div *ngFor="let reply of comment.replies" class="flex gap-3 ml-3">
+                <a [routerLink]="['/profile', reply.user.username]" class="no-underline">
+                  <div class="w-7 h-7 bg-gradient-to-br from-primary-300 to-accent-300 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                    {{ reply.user.name.charAt(0) }}
+                  </div>
+                </a>
+                <div class="flex-1">
+                  <div class="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-3">
+                    <div class="flex items-center gap-2 mb-1">
+                      <a [routerLink]="['/profile', reply.user.username]" class="font-medium text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 no-underline text-sm transition-colors">
+                        {{ reply.user.name }}
+                      </a>
+                      <span class="text-xs text-gray-400 dark:text-gray-600">{{ reply.created_at | date: 'short' }}</span>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm">{{ reply.content }}</p>
+                  </div>
+                  <button *ngIf="auth.user()?.id === reply.user.id" (click)="deleteComment(reply.id)" class="text-xs text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors no-underline mt-1 ml-2">
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <p class="text-gray-700">{{ comment.content }}</p>
       </div>
-      <p *ngIf="!p.comments?.length" class="text-gray-500 text-center py-4">No comments yet. Be the first!</p>
+
+      <p *ngIf="!p.comments?.length" class="text-center text-gray-400 dark:text-gray-600 py-8">
+        No comments yet. Be the first to share your thoughts!
+      </p>
     </div>
   </section>
 </article>
 
-<div *ngIf="!loading() && !post()" class="text-center py-12">
-  <p class="text-gray-500 text-lg">Post not found.</p>
-  <a routerLink="/" class="btn-primary mt-4">Back to Home</a>
+<div *ngIf="!loading() && !post()" class="text-center py-16">
+  <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
+    <svg class="w-8 h-8 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  </div>
+  <p class="text-lg text-gray-500 dark:text-gray-400 mb-4">Post not found</p>
+  <a routerLink="/" class="btn-primary">Back to Home</a>
 </div>

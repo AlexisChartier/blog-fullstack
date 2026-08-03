@@ -17,11 +17,33 @@ export class AuthService {
   readonly loading = this._loading.asReadonly();
   readonly isAuthenticated = signal(false);
 
+  private TOKEN_KEY = 'blog_token';
+
+  constructor() {
+    this.restoreSession();
+  }
+
+  private restoreSession() {
+    if (typeof localStorage === 'undefined') return;
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    if (token) {
+      this.fetchUser();
+    }
+  }
+
+  getToken(): string | null {
+    if (typeof localStorage === 'undefined') return null;
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
   login(email: string, password: string) {
     this._loading.set(true);
-    this.http.post<{ message: string; user: User }>(`${this.apiUrl}/auth/login`, { email, password })
+    this.http.post<{ message: string; user: User; token: string }>(`${this.apiUrl}/auth/login`, { email, password })
       .subscribe({
         next: (res) => {
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(this.TOKEN_KEY, res.token);
+          }
           this._user.set(res.user);
           this.isAuthenticated.set(true);
           this._loading.set(false);
@@ -33,10 +55,13 @@ export class AuthService {
 
   register(name: string, username: string, email: string, password: string) {
     this._loading.set(true);
-    this.http.post<{ message: string; user: User }>(`${this.apiUrl}/auth/register`, {
+    this.http.post<{ message: string; user: User; token: string }>(`${this.apiUrl}/auth/register`, {
       name, username, email, password, password_confirmation: password,
     }).subscribe({
       next: (res) => {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(this.TOKEN_KEY, res.token);
+        }
         this._user.set(res.user);
         this.isAuthenticated.set(true);
         this._loading.set(false);
@@ -49,6 +74,9 @@ export class AuthService {
   logout() {
     this.http.post(`${this.apiUrl}/auth/logout`, {}).subscribe({
       next: () => {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem(this.TOKEN_KEY);
+        }
         this._user.set(null);
         this.isAuthenticated.set(false);
         this.router.navigate(['/']);
@@ -62,7 +90,12 @@ export class AuthService {
         this._user.set(res.user);
         this.isAuthenticated.set(true);
       },
-      error: () => this.isAuthenticated.set(false),
+      error: () => {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem(this.TOKEN_KEY);
+        }
+        this.isAuthenticated.set(false);
+      },
     });
   }
 

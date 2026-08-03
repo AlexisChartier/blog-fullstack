@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { BlogService } from '../../../core/services/blog.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Post } from '../../../core/models';
+import { Post, Comment } from '../../../core/models';
 
 @Component({
   selector: 'app-post-detail',
@@ -24,6 +24,9 @@ export class PostDetailComponent implements OnInit {
   loading = signal(true);
   newComment = signal('');
   commenting = signal(false);
+  replyingTo = signal<number | null>(null);
+  replyContent = signal('');
+  copied = signal(false);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -37,7 +40,7 @@ export class PostDetailComponent implements OnInit {
     this.blogService.getPost(slug).subscribe({
       next: (post) => {
         this.post.set(post);
-        this.title.setTitle(`${post.title} - Blog`);
+        this.title.setTitle(`${post.title} — DevBlog`);
         this.meta.updateTag({ name: 'description', content: post.excerpt ?? post.title });
         this.loading.set(false);
       },
@@ -45,12 +48,12 @@ export class PostDetailComponent implements OnInit {
     });
   }
 
-  submitComment(parentId?: number) {
-    const content = parentId ? '' : this.newComment().trim();
+  submitComment() {
+    const content = this.newComment().trim();
     if (!content) return;
 
     this.commenting.set(true);
-    this.blogService.addComment(this.post()!.id, content, parentId).subscribe({
+    this.blogService.addComment(this.post()!.id, content).subscribe({
       next: () => {
         this.newComment.set('');
         this.commenting.set(false);
@@ -58,5 +61,61 @@ export class PostDetailComponent implements OnInit {
       },
       error: () => this.commenting.set(false),
     });
+  }
+
+  startReply(commentId: number) {
+    this.replyingTo.set(commentId);
+    this.replyContent.set('');
+  }
+
+  cancelReply() {
+    this.replyingTo.set(null);
+    this.replyContent.set('');
+  }
+
+  submitReply(parentId: number) {
+    const content = this.replyContent().trim();
+    if (!content) return;
+
+    this.commenting.set(true);
+    this.blogService.addComment(this.post()!.id, content, parentId).subscribe({
+      next: () => {
+        this.replyContent.set('');
+        this.replyingTo.set(null);
+        this.commenting.set(false);
+        this.loadPost(this.post()!.slug);
+      },
+      error: () => this.commenting.set(false),
+    });
+  }
+
+  deleteComment(id: number) {
+    if (!confirm('Delete this comment?')) return;
+    this.blogService.deleteComment(id).subscribe({
+      next: () => this.loadPost(this.post()!.slug),
+    });
+  }
+
+  sharePost() {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({
+        title: this.post()?.title,
+        url: window.location.href,
+      });
+    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
+    }
+  }
+
+  get readingTime(): number {
+    const content = this.post()?.content ?? '';
+    const words = content.split(/\s+/).length;
+    return Math.ceil(words / 200);
+  }
+
+  get topLevelComments(): Comment[] {
+    return this.post()?.comments?.filter(c => !c.replies || true) ?? [];
   }
 }

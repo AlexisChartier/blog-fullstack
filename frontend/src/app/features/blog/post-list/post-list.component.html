@@ -1,64 +1,120 @@
-<div class="space-y-8">
-  <h1 class="text-3xl font-bold text-gray-900">{{ pageTitle() }}</h1>
+<div class="space-y-6">
+  <!-- Search bar -->
+  <div class="relative">
+    <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <input
+      type="text"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+      (input)="onSearchInput()"
+      class="input pl-11 text-lg"
+      placeholder="Search articles..."
+    />
+  </div>
+
+  <!-- Page title with filter badge -->
+  <div class="flex items-center gap-3 flex-wrap">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ pageTitle() }}</h1>
+    <span *ngIf="hasFilter" (click)="clearFilters()" class="badge-gray cursor-pointer hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-300">
+      <span>Clear filter</span>
+      <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </span>
+    <span class="text-sm text-gray-500 dark:text-gray-400">{{ total() }} article{{ total() !== 1 ? 's' : '' }}</span>
+  </div>
 
   <div class="flex flex-col lg:flex-row gap-8">
+    <!-- Posts -->
     <div class="flex-1 space-y-6">
-      <div *ngIf="loading()" class="text-center py-12 text-gray-500">Loading posts...</div>
-
-      <div *ngIf="!loading() && posts().length === 0" class="text-center py-12 text-gray-500">
-        No posts found.
+      <!-- Skeleton loaders -->
+      <div *ngIf="loading()" class="space-y-6">
+        <div *ngFor="let i of [1,2,3]" class="card p-6">
+          <div class="skeleton h-6 w-3/4 mb-4"></div>
+          <div class="skeleton h-4 w-1/2 mb-3"></div>
+          <div class="skeleton h-3 w-full mb-2"></div>
+          <div class="skeleton h-3 w-5/6"></div>
+        </div>
       </div>
 
-      <article *ngFor="let post of posts()" class="card hover:shadow-md transition-shadow">
-        <a [routerLink]="['/post', post.slug]" class="no-underline">
-          <h2 class="text-xl font-bold text-gray-900 hover:text-primary-600 mb-2">{{ post.title }}</h2>
-        </a>
-        <div class="flex items-center gap-4 text-sm text-gray-500 mb-3">
-          <a [routerLink]="['/profile', post.author?.username]" class="hover:text-primary-600 no-underline">
+      <!-- Empty state -->
+      <div *ngIf="!loading() && posts().length === 0" class="text-center py-16">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
+          <svg class="w-8 h-8 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <p class="text-lg text-gray-500 dark:text-gray-400 mb-2">No posts found</p>
+        <p *ngIf="hasFilter" class="text-sm text-gray-400 dark:text-gray-500">Try a different search or clear filters</p>
+      </div>
+
+      <!-- Post cards -->
+      <article *ngFor="let post of posts()" class="card-hover p-6 animate-fade-in cursor-pointer" (click)="router.navigate(['/post', post.slug])">
+        <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mb-3">
+          <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-accent-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
+            {{ post.author?.name?.charAt(0) || 'A' }}
+          </div>
+          <a [routerLink]="['/profile', post.author?.username]" (click)="$event.stopPropagation()" class="font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 no-underline transition-colors">
             {{ post.author?.name }}
           </a>
-          <span>{{ post.published_at | date: 'mediumDate' }}</span>
+          <span>·</span>
+          <span>{{ post.published_at | date: 'MMM d, y' }}</span>
         </div>
-        <p class="text-gray-600 mb-4">{{ post.excerpt }}</p>
-        <div class="flex flex-wrap gap-2">
-          <span *ngFor="let cat of post.categories" class="badge-primary">
-            <a [routerLink]="['/category', cat.slug]" class="no-underline text-primary-800">{{ cat.name }}</a>
-          </span>
-          <span *ngFor="let tag of post.tags" class="badge-gray">
-            <a [routerLink]="['/tag', tag.slug]" class="no-underline text-gray-600"><span>&#35;</span>{{ tag.name }}</a>
-          </span>
+
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ post.title }}</h2>
+
+        <p class="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">{{ post.excerpt }}</p>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <a *ngFor="let cat of post.categories" [routerLink]="['/category', cat.slug]" (click)="$event.stopPropagation()" class="badge-primary no-underline hover:bg-primary-200 dark:hover:bg-primary-800/50 transition-colors">
+            {{ cat.name }}
+          </a>
+          <a *ngFor="let tag of post.tags" [routerLink]="['/tag', tag.slug]" (click)="$event.stopPropagation()" class="badge-gray no-underline hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <span class="text-gray-400">#</span>{{ tag.name }}
+          </a>
         </div>
       </article>
 
-      <div *ngIf="lastPage() > 1" class="flex items-center justify-between pt-4">
-        <button (click)="prevPage()" [disabled]="currentPage() === 1" class="btn-secondary disabled:opacity-50">
-          Previous
+      <!-- Pagination -->
+      <div *ngIf="lastPage() > 1" class="flex items-center justify-center gap-2 pt-4">
+        <button (click)="prevPage()" [disabled]="currentPage() === 1" class="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Prev
         </button>
-        <span class="text-sm text-gray-600">Page {{ currentPage() }} of {{ lastPage() }} ({{ total() }} posts)</span>
-        <button (click)="nextPage()" [disabled]="currentPage() === lastPage()" class="btn-secondary disabled:opacity-50">
+        <button *ngFor="let page of pageNumbers" (click)="goToPage(page)"
+          [class]="page === currentPage() ? 'btn-primary' : 'btn-secondary'"
+          class="min-w-10 justify-center">
+          {{ page }}
+        </button>
+        <button (click)="nextPage()" [disabled]="currentPage() === lastPage()" class="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed">
           Next
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </button>
       </div>
     </div>
 
-    <aside class="lg:w-64 space-y-6">
-      <div class="card">
-        <h3 class="font-bold text-gray-900 mb-3">Categories</h3>
+    <!-- Sidebar -->
+    <aside class="lg:w-72 space-y-6">
+      <div class="card p-5">
+        <h3 class="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+          Categories
+        </h3>
         <ul class="space-y-1">
           <li *ngFor="let cat of categories()">
-            <a [routerLink]="['/category', cat.slug]" class="text-sm text-gray-600 hover:text-primary-600 no-underline">
-              {{ cat.name }} ({{ cat.posts_count }})
+            <a [routerLink]="['/category', cat.slug]" class="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary-600 dark:hover:text-primary-400 no-underline transition-all">
+              <span>{{ cat.name }}</span>
+              <span class="text-xs text-gray-400 dark:text-gray-600">{{ cat.posts_count }}</span>
             </a>
           </li>
         </ul>
       </div>
 
-      <div class="card">
-        <h3 class="font-bold text-gray-900 mb-3">Tags</h3>
-        <div class="flex flex-wrap gap-1">
+      <div class="card p-5">
+        <h3 class="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+          Tags
+        </h3>
+        <div class="flex flex-wrap gap-2">
           <a *ngFor="let tag of tags()" [routerLink]="['/tag', tag.slug]"
-             class="badge-gray text-xs no-underline hover:bg-primary-100 hover:text-primary-800">
-            <span>&#35;</span>{{ tag.name }}
+             class="badge-gray no-underline hover:bg-primary-100 hover:text-primary-700 dark:hover:bg-primary-900/30 dark:hover:text-primary-300 transition-colors">
+            <span class="text-gray-400">#</span>{{ tag.name }}
           </a>
         </div>
       </div>

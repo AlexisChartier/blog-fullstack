@@ -1,47 +1,62 @@
-<div class="space-y-6">
-  <div class="flex items-center justify-between">
-    <h1 class="text-3xl font-bold text-gray-900">My Posts</h1>
-    <a routerLink="/admin/posts/new" class="btn-primary">New Post</a>
+<div class="space-y-6 animate-fade-in">
+  <div class="flex items-center justify-between flex-wrap gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">My Posts</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your articles</p>
+    </div>
+    <a routerLink="/admin/posts/new" class="btn-primary">
+      <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      New Post
+    </a>
   </div>
 
-  <div *ngIf="loading()" class="text-center py-12 text-gray-500">Loading...</div>
+  <div *ngIf="loading()" class="card p-6 space-y-3">
+    <div *ngFor="let i of [1,2,3]" class="skeleton h-12 w-full"></div>
+  </div>
 
   <div *ngIf="!loading()" class="card overflow-hidden p-0">
     <table class="w-full">
-      <thead class="bg-gray-50 border-b border-gray-200">
+      <thead class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
         <tr>
-          <th class="text-left px-6 py-3 text-sm font-medium text-gray-500">Title</th>
-          <th class="text-left px-6 py-3 text-sm font-medium text-gray-500">Status</th>
-          <th class="text-left px-6 py-3 text-sm font-medium text-gray-500">Published</th>
-          <th class="text-right px-6 py-3 text-sm font-medium text-gray-500">Actions</th>
+          <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
+          <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+          <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Published</th>
+          <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-200">
-        <tr *ngFor="let post of posts()" class="hover:bg-gray-50">
+      <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+        <tr *ngFor="let post of posts()" class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
           <td class="px-6 py-4">
-            <a [routerLink]="['/post', post.slug]" class="font-medium text-gray-900 hover:text-primary-600 no-underline">
+            <a [routerLink]="['/post', post.slug]" class="font-medium text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 no-underline transition-colors">
               {{ post.title }}
             </a>
           </td>
           <td class="px-6 py-4">
-            <span [class.bg-green-100]="post.status === 'published'"
-                  [class.text-green-800]="post.status === 'published'"
-                  [class.bg-gray-100]="post.status === 'draft'"
-                  [class.text-gray-800]="post.status === 'draft'"
-                  class="badge">
-              {{ post.status }}
-            </span>
+            <span *ngIf="post.status === 'published'" class="badge-green">published</span>
+            <span *ngIf="post.status === 'draft'" class="badge-gray">draft</span>
           </td>
-          <td class="px-6 py-4 text-sm text-gray-500">
-            {{ post.published_at | date: 'mediumDate' }}
+          <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+            {{ post.published_at | date: 'MMM d, y' }}
           </td>
-          <td class="px-6 py-4 text-right space-x-2">
-            <a [routerLink]="['/admin/posts', post.id, 'edit']" class="btn-secondary text-sm">Edit</a>
-            <button (click)="deletePost(post.id)" class="btn-danger text-sm">Delete</button>
+          <td class="px-6 py-4 text-right">
+            <div class="flex items-center justify-end gap-2">
+              <a [routerLink]="['/admin/posts', post.id, 'edit']" class="btn-ghost text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              </a>
+              <button (click)="deletePost(post.id)" class="btn-ghost text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
     </table>
-    <p *ngIf="posts().length === 0" class="text-center text-gray-500 py-8">No posts yet. Create your first post!</p>
+    <div *ngIf="posts().length === 0" class="text-center py-16">
+      <div class="inline-flex items-center justify-center w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
+        <svg class="w-7 h-7 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <p class="text-gray-500 dark:text-gray-400 mb-2">No posts yet.</p>
+      <a routerLink="/admin/posts/new" class="btn-primary text-sm mt-2">Create your first post</a>
+    </div>
   </div>
 </div>

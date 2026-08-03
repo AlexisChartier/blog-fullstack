@@ -50,4 +50,8 @@ export const routes: Routes = [
     canActivate: [authorGuard],
     loadComponent: () => import('./features/admin/post-form/post-form.component').then(m => m.PostFormComponent),
   },
+  {
+    path: '**',
+    loadComponent: () => import('./features/blog/post-list/post-list.component').then(m => m.PostListComponent),
+  },
 ];
