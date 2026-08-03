@@ -1,12 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Post, User } from '../models';
-import { environment } from '../../../environments/environment';
+import { API_URL } from '../tokens/api-url.token';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl;
+  private apiUrl = inject(API_URL);
 
   getProfile(username: string) {
     return this.http.get<User>(`${this.apiUrl}/users/${username}`);

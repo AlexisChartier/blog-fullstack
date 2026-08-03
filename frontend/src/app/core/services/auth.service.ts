@@ -2,12 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { User } from '../models';
-import { environment } from '../../../environments/environment';
+import { API_URL } from '../tokens/api-url.token';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private apiUrl = inject(API_URL);
 
   private _user = signal<User | null>(null);
   private _loading = signal(false);
@@ -18,7 +19,7 @@ export class AuthService {
 
   login(email: string, password: string) {
     this._loading.set(true);
-    this.http.post<{ message: string; user: User }>(`${environment.apiUrl}/auth/login`, { email, password })
+    this.http.post<{ message: string; user: User }>(`${this.apiUrl}/auth/login`, { email, password })
       .subscribe({
         next: (res) => {
           this._user.set(res.user);
@@ -32,7 +33,7 @@ export class AuthService {
 
   register(name: string, username: string, email: string, password: string) {
     this._loading.set(true);
-    this.http.post<{ message: string; user: User }>(`${environment.apiUrl}/auth/register`, {
+    this.http.post<{ message: string; user: User }>(`${this.apiUrl}/auth/register`, {
       name, username, email, password, password_confirmation: password,
     }).subscribe({
       next: (res) => {
@@ -46,7 +47,7 @@ export class AuthService {
   }
 
   logout() {
-    this.http.post(`${environment.apiUrl}/auth/logout`, {}).subscribe({
+    this.http.post(`${this.apiUrl}/auth/logout`, {}).subscribe({
       next: () => {
         this._user.set(null);
         this.isAuthenticated.set(false);
@@ -56,7 +57,7 @@ export class AuthService {
   }
 
   fetchUser() {
-    this.http.get<{ user: User }>(`${environment.apiUrl}/auth/me`).subscribe({
+    this.http.get<{ user: User }>(`${this.apiUrl}/auth/me`).subscribe({
       next: (res) => {
         this._user.set(res.user);
         this.isAuthenticated.set(true);

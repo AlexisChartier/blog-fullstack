@@ -1,12 +1,12 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Category, Comment, Paginated, Post, Tag } from '../models';
-import { environment } from '../../../environments/environment';
+import { API_URL } from '../tokens/api-url.token';
 
 @Injectable({ providedIn: 'root' })
 export class BlogService {
   private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl;
+  private apiUrl = inject(API_URL);
 
   getPosts(page = 1, filters?: { search?: string; category?: string; tag?: string }) {
     let params = new HttpParams().set('page', page);
