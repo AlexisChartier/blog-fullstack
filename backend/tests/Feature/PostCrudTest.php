@@ -4,14 +4,13 @@ use App\Models\Category;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\User;
-use Laravel\Sanctum\Sanctum;
 
 describe('Posts - CRUD (authenticated)', function () {
     it('allows author to create a post', function () {
         $author = authorUser();
         $cat = Category::factory()->create();
         $tag = Tag::factory()->create();
-        Sanctum::actingAs($author);
+        $this->actingAs($author);
 
         $this->postJson('/api/posts', [
             'title' => 'New Post',
@@ -29,7 +28,7 @@ describe('Posts - CRUD (authenticated)', function () {
 
     it('auto-generates slug on create', function () {
         $author = authorUser();
-        Sanctum::actingAs($author);
+        $this->actingAs($author);
 
         $this->postJson('/api/posts', [
             'title' => 'My New Blog Post',
@@ -44,7 +43,7 @@ describe('Posts - CRUD (authenticated)', function () {
         $author = authorUser();
         $cats = Category::factory(2)->create();
         $tags = Tag::factory(3)->create();
-        Sanctum::actingAs($author);
+        $this->actingAs($author);
 
         $this->postJson('/api/posts', [
             'title' => 'Post with relations',
@@ -62,7 +61,7 @@ describe('Posts - CRUD (authenticated)', function () {
 
     it('prevents reader from creating post', function () {
         $reader = readerUser();
-        Sanctum::actingAs($reader);
+        $this->actingAs($reader);
 
         $this->withExceptionHandling()->postJson('/api/posts', [
             'title' => 'Forbidden',
@@ -81,7 +80,7 @@ describe('Posts - CRUD (authenticated)', function () {
 
     it('validates required fields on create', function () {
         $author = authorUser();
-        Sanctum::actingAs($author);
+        $this->actingAs($author);
 
         $this->withExceptionHandling()->postJson('/api/posts', [])
             ->assertStatus(422)
@@ -91,7 +90,7 @@ describe('Posts - CRUD (authenticated)', function () {
     it('allows author to update own post', function () {
         $author = authorUser();
         $post = Post::factory()->create(['author_id' => $author->id]);
-        Sanctum::actingAs($author);
+        $this->actingAs($author);
 
         $this->putJson("/api/posts/{$post->id}", [
             'title' => 'Updated Title',
@@ -103,7 +102,7 @@ describe('Posts - CRUD (authenticated)', function () {
     it('allows admin to update any post', function () {
         $admin = adminUser();
         $post = Post::factory()->create();
-        Sanctum::actingAs($admin);
+        $this->actingAs($admin);
 
         $this->putJson("/api/posts/{$post->id}", [
             'title' => 'Admin Updated',
@@ -116,7 +115,7 @@ describe('Posts - CRUD (authenticated)', function () {
         $author = authorUser();
         $other = User::factory()->create();
         $post = Post::factory()->create(['author_id' => $other->id]);
-        Sanctum::actingAs($author);
+        $this->actingAs($author);
 
         $this->withExceptionHandling()->putJson("/api/posts/{$post->id}", [
             'title' => 'Hack',
@@ -127,7 +126,7 @@ describe('Posts - CRUD (authenticated)', function () {
         $author = authorUser();
         $post = Post::factory()->create(['author_id' => $author->id]);
         $cats = Category::factory(2)->create();
-        Sanctum::actingAs($author);
+        $this->actingAs($author);
 
         $this->putJson("/api/posts/{$post->id}", [
             'categories' => $cats->pluck('id')->toArray(),
@@ -139,7 +138,7 @@ describe('Posts - CRUD (authenticated)', function () {
     it('allows author to delete own post', function () {
         $author = authorUser();
         $post = Post::factory()->create(['author_id' => $author->id]);
-        Sanctum::actingAs($author);
+        $this->actingAs($author);
 
         $this->deleteJson("/api/posts/{$post->id}")
             ->assertOk()
@@ -151,7 +150,7 @@ describe('Posts - CRUD (authenticated)', function () {
     it('allows admin to delete any post', function () {
         $admin = adminUser();
         $post = Post::factory()->create();
-        Sanctum::actingAs($admin);
+        $this->actingAs($admin);
 
         $this->deleteJson("/api/posts/{$post->id}")->assertOk();
     });
@@ -160,7 +159,7 @@ describe('Posts - CRUD (authenticated)', function () {
         $author = authorUser();
         $other = User::factory()->create();
         $post = Post::factory()->create(['author_id' => $other->id]);
-        Sanctum::actingAs($author);
+        $this->actingAs($author);
 
         $this->withExceptionHandling()->deleteJson("/api/posts/{$post->id}")
             ->assertForbidden();

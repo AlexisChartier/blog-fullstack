@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use Laravel\Sanctum\Sanctum;
 
 describe('Auth - Register', function () {
     it('registers a new user successfully', function () {
@@ -101,7 +100,7 @@ describe('Auth - Login', function () {
         $this->withExceptionHandling()->postJson('/api/auth/login', [
             'email' => 'login@example.com',
             'password' => 'wrongpassword',
-        ])->assertStatus(422);
+        ])->assertStatus(401);
     });
 
     it('validates required fields', function () {
@@ -114,7 +113,7 @@ describe('Auth - Login', function () {
 describe('Auth - Me', function () {
     it('returns current user when authenticated', function () {
         $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->getJson('/api/auth/me')
             ->assertOk()
@@ -130,7 +129,7 @@ describe('Auth - Me', function () {
 describe('Auth - Logout', function () {
     it('logs out successfully', function () {
         $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->withExceptionHandling()->postJson('/api/auth/logout')
             ->assertOk()

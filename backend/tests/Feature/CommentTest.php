@@ -3,7 +3,6 @@
 use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
-use Laravel\Sanctum\Sanctum;
 
 describe('Comments API', function () {
     it('creates a comment on a post', function () {
@@ -12,7 +11,7 @@ describe('Comments API', function () {
             'status' => 'published',
             'published_at' => now()->subDay(),
         ]);
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->postJson("/api/posts/{$post->id}/comments", [
             'content' => 'Great article!',
@@ -26,7 +25,7 @@ describe('Comments API', function () {
         $user = User::factory()->create();
         $post = Post::factory()->create();
         $parent = Comment::factory()->create(['post_id' => $post->id]);
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->postJson("/api/posts/{$post->id}/comments", [
             'content' => 'Reply to comment',
@@ -39,7 +38,7 @@ describe('Comments API', function () {
     it('validates content is required', function () {
         $user = User::factory()->create();
         $post = Post::factory()->create();
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->withExceptionHandling()->postJson("/api/posts/{$post->id}/comments", [])
             ->assertStatus(422)
@@ -49,7 +48,7 @@ describe('Comments API', function () {
     it('validates content min length', function () {
         $user = User::factory()->create();
         $post = Post::factory()->create();
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->withExceptionHandling()->postJson("/api/posts/{$post->id}/comments", [
             'content' => 'a',
@@ -59,7 +58,7 @@ describe('Comments API', function () {
     it('validates content max length', function () {
         $user = User::factory()->create();
         $post = Post::factory()->create();
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->withExceptionHandling()->postJson("/api/posts/{$post->id}/comments", [
             'content' => str_repeat('x', 1001),
@@ -77,7 +76,7 @@ describe('Comments API', function () {
     it('allows user to delete own comment', function () {
         $user = User::factory()->create();
         $comment = Comment::factory()->create(['user_id' => $user->id]);
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->deleteJson("/api/comments/{$comment->id}")
             ->assertOk()
@@ -89,7 +88,7 @@ describe('Comments API', function () {
     it('allows admin to delete any comment', function () {
         $admin = adminUser();
         $comment = Comment::factory()->create();
-        Sanctum::actingAs($admin);
+        $this->actingAs($admin);
 
         $this->deleteJson("/api/comments/{$comment->id}")->assertOk();
     });
@@ -98,7 +97,7 @@ describe('Comments API', function () {
         $user = User::factory()->create();
         $other = User::factory()->create();
         $comment = Comment::factory()->create(['user_id' => $other->id]);
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->withExceptionHandling()->deleteJson("/api/comments/{$comment->id}")
             ->assertForbidden();

@@ -21,13 +21,13 @@ Route::get('/users/{username}', [UserController::class, 'show'])->where('usernam
 Route::get('/users/{username}/posts', [UserController::class, 'posts'])->where('username', '[a-zA-Z0-9_]+');
 
 // Auth routes
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/login', [AuthController::class, 'login']);
-Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-Route::get('/auth/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
+Route::post('/auth/register', [AuthController::class, 'register'])->middleware('web');
+Route::post('/auth/login', [AuthController::class, 'login'])->middleware('web');
+Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware(['web', 'auth']);
+Route::get('/auth/me', [AuthController::class, 'me'])->middleware(['web', 'auth']);
 
 // Authenticated routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['web', 'auth', 'single.session'])->group(function () {
     // Posts CRUD
     Route::post('/posts', [PostController::class, 'store']);
     Route::put('/posts/{post}', [PostController::class, 'update']);

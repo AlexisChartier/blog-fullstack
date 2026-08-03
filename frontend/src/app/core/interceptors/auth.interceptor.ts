@@ -1,16 +1,21 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpXsrfTokenExtractor } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth = inject(AuthService);
-  const token = auth.getToken();
-
   const isApiRequest = req.url.startsWith('/api') || req.url.includes('/api/');
 
-  if (isApiRequest && token) {
+  if (isApiRequest) {
+    const tokenExtractor = inject(HttpXsrfTokenExtractor);
+    const csrfToken = tokenExtractor.getToken();
+    const headers: Record<string, string> = {};
+
+    if (csrfToken) {
+      headers['X-XSRF-TOKEN'] = csrfToken;
+    }
+
     return next(req.clone({
-      setHeaders: { Authorization: `Bearer ${token}` },
+      withCredentials: true,
+      setHeaders: headers,
     }));
   }
 

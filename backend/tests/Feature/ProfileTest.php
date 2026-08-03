@@ -1,12 +1,11 @@
 <?php
 
 use App\Models\User;
-use Laravel\Sanctum\Sanctum;
 
 describe('Profile Update API', function () {
     it('updates profile name and bio', function () {
         $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->putJson('/api/profile', [
             'name' => 'Updated Name',
@@ -20,7 +19,7 @@ describe('Profile Update API', function () {
 
     it('updates username', function () {
         $user = User::factory()->create(['username' => 'oldname']);
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->putJson('/api/profile', [
             'name' => $user->name,
@@ -33,7 +32,7 @@ describe('Profile Update API', function () {
     it('validates unique username on update', function () {
         $user = User::factory()->create(['username' => 'user1']);
         User::factory()->create(['username' => 'taken']);
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->withExceptionHandling()->putJson('/api/profile', [
             'name' => $user->name,
@@ -43,7 +42,7 @@ describe('Profile Update API', function () {
 
     it('allows keeping own username', function () {
         $user = User::factory()->create(['username' => 'myusername']);
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->putJson('/api/profile', [
             'name' => $user->name,
@@ -53,7 +52,7 @@ describe('Profile Update API', function () {
 
     it('validates required fields', function () {
         $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->withExceptionHandling()->putJson('/api/profile', [])
             ->assertStatus(422)
@@ -69,7 +68,7 @@ describe('Profile Update API', function () {
 
     it('validates bio max length', function () {
         $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        $this->actingAs($user);
 
         $this->withExceptionHandling()->putJson('/api/profile', [
             'name' => $user->name,
