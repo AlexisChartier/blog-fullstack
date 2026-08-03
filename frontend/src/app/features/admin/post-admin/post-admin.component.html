@@ -1,0 +1,47 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-3xl font-bold text-gray-900">My Posts</h1>
+    <a routerLink="/admin/posts/new" class="btn-primary">New Post</a>
+  </div>
+
+  <div *ngIf="loading()" class="text-center py-12 text-gray-500">Loading...</div>
+
+  <div *ngIf="!loading()" class="card overflow-hidden p-0">
+    <table class="w-full">
+      <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th class="text-left px-6 py-3 text-sm font-medium text-gray-500">Title</th>
+          <th class="text-left px-6 py-3 text-sm font-medium text-gray-500">Status</th>
+          <th class="text-left px-6 py-3 text-sm font-medium text-gray-500">Published</th>
+          <th class="text-right px-6 py-3 text-sm font-medium text-gray-500">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <tr *ngFor="let post of posts()" class="hover:bg-gray-50">
+          <td class="px-6 py-4">
+            <a [routerLink]="['/post', post.slug]" class="font-medium text-gray-900 hover:text-primary-600 no-underline">
+              {{ post.title }}
+            </a>
+          </td>
+          <td class="px-6 py-4">
+            <span [class.bg-green-100]="post.status === 'published'"
+                  [class.text-green-800]="post.status === 'published'"
+                  [class.bg-gray-100]="post.status === 'draft'"
+                  [class.text-gray-800]="post.status === 'draft'"
+                  class="badge">
+              {{ post.status }}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-500">
+            {{ post.published_at | date: 'mediumDate' }}
+          </td>
+          <td class="px-6 py-4 text-right space-x-2">
+            <a [routerLink]="['/admin/posts', post.id, 'edit']" class="btn-secondary text-sm">Edit</a>
+            <button (click)="deletePost(post.id)" class="btn-danger text-sm">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="posts().length === 0" class="text-center text-gray-500 py-8">No posts yet. Create your first post!</p>
+  </div>
+</div>

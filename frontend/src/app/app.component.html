@@ -1,0 +1,39 @@
+<nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+      <div class="flex items-center space-x-8">
+        <a routerLink="/" class="text-xl font-bold text-gray-900 no-underline hover:text-primary-600">
+          Blog
+        </a>
+        <div class="hidden sm:flex sm:space-x-4">
+          <a routerLink="/" routerLinkActive="text-primary-600" class="text-gray-600 hover:text-primary-600 no-underline">Home</a>
+          <a routerLink="/admin/posts" *ngIf="isAuthor" routerLinkActive="text-primary-600" class="text-gray-600 hover:text-primary-600 no-underline">Dashboard</a>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <ng-container *ngIf="isAuthenticated(); else notAuth">
+          <a *ngIf="isAuthor" routerLink="/admin/posts/new" class="btn-primary text-sm">New Post</a>
+          <a [routerLink]="['/profile', user()?.username]" class="text-sm text-gray-600 hover:text-primary-600 no-underline">
+            {{ user()?.name }}
+          </a>
+          <button (click)="logout()" class="btn-secondary text-sm">Logout</button>
+        </ng-container>
+        <ng-template #notAuth>
+          <a routerLink="/login" class="text-sm text-gray-600 hover:text-primary-600 no-underline">Login</a>
+          <a routerLink="/register" class="btn-primary text-sm">Register</a>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-4rem)]">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="bg-white border-t border-gray-200 mt-auto">
+  <div class="max-w-6xl mx-auto px-4 py-6 text-center text-gray-500 text-sm">
+  Multi-User Blogging System &mdash; Angular 17 + Laravel 11 + PostgreSQL + Redis
+  </div>
+</footer>

@@ -1,0 +1,67 @@
+<div class="space-y-8">
+  <h1 class="text-3xl font-bold text-gray-900">{{ pageTitle() }}</h1>
+
+  <div class="flex flex-col lg:flex-row gap-8">
+    <div class="flex-1 space-y-6">
+      <div *ngIf="loading()" class="text-center py-12 text-gray-500">Loading posts...</div>
+
+      <div *ngIf="!loading() && posts().length === 0" class="text-center py-12 text-gray-500">
+        No posts found.
+      </div>
+
+      <article *ngFor="let post of posts()" class="card hover:shadow-md transition-shadow">
+        <a [routerLink]="['/post', post.slug]" class="no-underline">
+          <h2 class="text-xl font-bold text-gray-900 hover:text-primary-600 mb-2">{{ post.title }}</h2>
+        </a>
+        <div class="flex items-center gap-4 text-sm text-gray-500 mb-3">
+          <a [routerLink]="['/profile', post.author?.username]" class="hover:text-primary-600 no-underline">
+            {{ post.author?.name }}
+          </a>
+          <span>{{ post.published_at | date: 'mediumDate' }}</span>
+        </div>
+        <p class="text-gray-600 mb-4">{{ post.excerpt }}</p>
+        <div class="flex flex-wrap gap-2">
+          <span *ngFor="let cat of post.categories" class="badge-primary">
+            <a [routerLink]="['/category', cat.slug]" class="no-underline text-primary-800">{{ cat.name }}</a>
+          </span>
+          <span *ngFor="let tag of post.tags" class="badge-gray">
+            <a [routerLink]="['/tag', tag.slug]" class="no-underline text-gray-600"><span>&#35;</span>{{ tag.name }}</a>
+          </span>
+        </div>
+      </article>
+
+      <div *ngIf="lastPage() > 1" class="flex items-center justify-between pt-4">
+        <button (click)="prevPage()" [disabled]="currentPage() === 1" class="btn-secondary disabled:opacity-50">
+          Previous
+        </button>
+        <span class="text-sm text-gray-600">Page {{ currentPage() }} of {{ lastPage() }} ({{ total() }} posts)</span>
+        <button (click)="nextPage()" [disabled]="currentPage() === lastPage()" class="btn-secondary disabled:opacity-50">
+          Next
+        </button>
+      </div>
+    </div>
+
+    <aside class="lg:w-64 space-y-6">
+      <div class="card">
+        <h3 class="font-bold text-gray-900 mb-3">Categories</h3>
+        <ul class="space-y-1">
+          <li *ngFor="let cat of categories()">
+            <a [routerLink]="['/category', cat.slug]" class="text-sm text-gray-600 hover:text-primary-600 no-underline">
+              {{ cat.name }} ({{ cat.posts_count }})
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3 class="font-bold text-gray-900 mb-3">Tags</h3>
+        <div class="flex flex-wrap gap-1">
+          <a *ngFor="let tag of tags()" [routerLink]="['/tag', tag.slug]"
+             class="badge-gray text-xs no-underline hover:bg-primary-100 hover:text-primary-800">
+            <span>&#35;</span>{{ tag.name }}
+          </a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
