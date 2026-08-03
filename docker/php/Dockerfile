@@ -10,7 +10,10 @@ RUN apk add --no-cache \
     libpq-dev \
     icu-dev \
     oniguruma-dev \
-    unzip
+    unzip \
+    autoconf \
+    build-base \
+    linux-headers
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install \
