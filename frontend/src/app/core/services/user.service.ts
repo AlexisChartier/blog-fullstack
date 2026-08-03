@@ -6,8 +6,8 @@ import { map } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  private http = inject(HttpClient);
-  private apiUrl = inject(API_URL);
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = inject(API_URL);
 
   getProfile(username: string) {
     return this.http.get<{ data: User }>(`${this.apiUrl}/users/${username}`).pipe(

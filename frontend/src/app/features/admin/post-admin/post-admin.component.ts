@@ -12,9 +12,9 @@ import { Post } from '../../../core/models';
   templateUrl: './post-admin.component.html',
 })
 export class PostAdminComponent implements OnInit {
-  private blogService = inject(BlogService);
-  private auth = inject(AuthService);
-  private router = inject(Router);
+  private readonly blogService = inject(BlogService);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   posts = signal<Post[]>([]);
   loading = signal(true);

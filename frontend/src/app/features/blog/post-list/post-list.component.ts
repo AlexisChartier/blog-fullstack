@@ -1,11 +1,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, Data } from '@angular/router';
-import { NgIf, NgFor } from '@angular/common';
+import { NgIf, NgFor, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BlogService } from '../../../core/services/blog.service';
 import { Post, Category, Tag, Paginated } from '../../../core/models';
-import { DatePipe } from '@angular/common';
-import { take } from 'rxjs';
 
 @Component({
   selector: 'app-post-list',
@@ -14,9 +12,9 @@ import { take } from 'rxjs';
   templateUrl: './post-list.component.html',
 })
 export class PostListComponent implements OnInit {
-  private blogService = inject(BlogService);
-  private route = inject(ActivatedRoute);
-  router = inject(Router);
+  private readonly blogService = inject(BlogService);
+  private readonly route = inject(ActivatedRoute);
+  readonly router = inject(Router);
 
   posts = signal<Post[]>([]);
   categories = signal<Category[]>([]);
@@ -57,7 +55,7 @@ export class PostListComponent implements OnInit {
       } else if (slug) {
         if (this.route.snapshot.url[0]?.path === 'category') {
           this.currentFilter.set({ category: slug });
-          this.pageTitle.set(`Category: ${slug.replace(/-/g, ' ')}`);
+          this.pageTitle.set(`Category: ${slug.replaceAll('-', ' ')}`);
         } else if (this.route.snapshot.url[0]?.path === 'tag') {
           this.currentFilter.set({ tag: slug });
           this.pageTitle.set(`#${slug}`);

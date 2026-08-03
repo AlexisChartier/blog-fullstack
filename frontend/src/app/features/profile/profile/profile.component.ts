@@ -11,9 +11,9 @@ import { User, Post } from '../../../core/models';
   templateUrl: './profile.component.html',
 })
 export class ProfileComponent implements OnInit {
-  private userService = inject(UserService);
-  private route = inject(ActivatedRoute);
-  router = inject(Router);
+  private readonly userService = inject(UserService);
+  private readonly route = inject(ActivatedRoute);
+  readonly router = inject(Router);
 
   user = signal<User | null>(null);
   posts = signal<Post[]>([]);

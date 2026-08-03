@@ -6,8 +6,8 @@ import { map } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class BlogService {
-  private http = inject(HttpClient);
-  private apiUrl = inject(API_URL);
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = inject(API_URL);
 
   getPosts(page = 1, filters?: { search?: string; category?: string; tag?: string }) {
     let params = new HttpParams().set('page', page);

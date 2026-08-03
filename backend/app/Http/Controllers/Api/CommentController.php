@@ -33,7 +33,7 @@ class CommentController extends Controller
         ], 201);
     }
 
-    public function destroy(Request $request, Comment $comment): JsonResponse
+    public function destroy(Comment $comment): JsonResponse
     {
         $this->authorize('delete', $comment);
 

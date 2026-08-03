@@ -11,7 +11,7 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './register.component.html',
 })
 export class RegisterComponent {
-  private auth = inject(AuthService);
+  private readonly auth = inject(AuthService);
 
   name = signal('');
   username = signal('');

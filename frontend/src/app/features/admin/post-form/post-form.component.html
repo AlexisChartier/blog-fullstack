@@ -5,32 +5,32 @@
 
   <form (ngSubmit)="submit()" class="card p-6 space-y-5">
     <div>
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Title</label>
-      <input type="text" [(ngModel)]="title" name="title" class="input text-lg" placeholder="An awesome title..." required />
+      <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Title</label>
+      <input id="title" type="text" [(ngModel)]="title" name="title" class="input text-lg" placeholder="An awesome title..." required />
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Excerpt</label>
-      <textarea [(ngModel)]="excerpt" name="excerpt" rows="2" class="input resize-none" placeholder="A brief summary shown in post listings..."></textarea>
+      <label for="excerpt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Excerpt</label>
+      <textarea id="excerpt" [(ngModel)]="excerpt" name="excerpt" rows="2" class="input resize-none" placeholder="A brief summary shown in post listings..."></textarea>
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Content</label>
-      <textarea [(ngModel)]="content" name="content" rows="14" class="input font-mono text-sm leading-relaxed" placeholder="Write your post content..." required></textarea>
+      <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Content</label>
+      <textarea id="content" [(ngModel)]="content" name="content" rows="14" class="input font-mono text-sm leading-relaxed" placeholder="Write your post content..." required></textarea>
       <p class="text-xs text-gray-400 dark:text-gray-600 mt-1">Markdown support coming soon. Plain text for now.</p>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Status</label>
-        <select [(ngModel)]="status" name="status" class="input">
+        <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Status</label>
+        <select id="status" [(ngModel)]="status" name="status" class="input">
           <option value="draft">Draft</option>
           <option value="published">Published</option>
         </select>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Publish Date</label>
-        <input type="datetime-local" [(ngModel)]="publishedAt" name="published_at" class="input" />
+        <label for="published_at" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Publish Date</label>
+        <input id="published_at" type="datetime-local" [(ngModel)]="publishedAt" name="published_at" class="input" />
       </div>
     </div>
 

@@ -12,9 +12,9 @@ import { Category, Tag } from '../../../core/models';
   templateUrl: './post-form.component.html',
 })
 export class PostFormComponent implements OnInit {
-  private blogService = inject(BlogService);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  private readonly blogService = inject(BlogService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   isEdit = signal(false);
   postId = signal<number | null>(null);

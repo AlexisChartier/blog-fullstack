@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { BlogService } from '../../../core/services/blog.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Post, Comment } from '../../../core/models';
+import { Post } from '../../../core/models';
 
 @Component({
   selector: 'app-post-detail',
@@ -14,11 +14,11 @@ import { Post, Comment } from '../../../core/models';
   templateUrl: './post-detail.component.html',
 })
 export class PostDetailComponent implements OnInit {
-  private blogService = inject(BlogService);
-  private route = inject(ActivatedRoute);
-  private meta = inject(Meta);
-  private title = inject(Title);
-  protected auth = inject(AuthService);
+  private readonly blogService = inject(BlogService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly meta = inject(Meta);
+  private readonly title = inject(Title);
+  protected readonly auth = inject(AuthService);
 
   post = signal<Post | null>(null);
   loading = signal(true);

@@ -12,8 +12,8 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './profile-edit.component.html',
 })
 export class ProfileEditComponent {
-  private userService = inject(UserService);
-  private auth = inject(AuthService);
+  private readonly userService = inject(UserService);
+  private readonly auth = inject(AuthService);
 
   name = signal('');
   username = signal('');

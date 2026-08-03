@@ -7,9 +7,9 @@ import { API_URL } from '../tokens/api-url.token';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private http = inject(HttpClient);
-  private router = inject(Router);
-  private apiUrl = inject(API_URL);
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+  private readonly apiUrl = inject(API_URL);
 
   private _user = signal<User | null>(null);
   private _loading = signal(false);

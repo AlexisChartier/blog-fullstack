@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 
 describe('User Model', function () {
     it('has posts relation', function () {
@@ -15,8 +17,13 @@ describe('User Model', function () {
     it('has comments relation', function () {
         $user = User::factory()->create();
         $post = Post::factory()->create(['author_id' => $user->id]);
+        $comment = Comment::factory()->create([
+            'user_id' => $user->id,
+            'post_id' => $post->id,
+        ]);
 
-        expect($user->posts)->toHaveCount(1);
+        expect($user->comments)->toHaveCount(1);
+        expect($user->comments->first()->id)->toBe($comment->id);
     });
 
     it('checks admin role', function () {
@@ -54,5 +61,13 @@ describe('User Model', function () {
     it('casts password as hashed', function () {
         $user = User::factory()->create(['password' => 'plain-text']);
         expect(Hash::check('plain-text', $user->password))->toBeTrue();
+    });
+
+    it('casts email_verified_at as datetime', function () {
+        $user = User::factory()->create([
+            'email_verified_at' => '2025-01-01 12:00:00',
+        ]);
+
+        expect($user->email_verified_at)->toBeInstanceOf(Carbon::class);
     });
 });

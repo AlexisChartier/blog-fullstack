@@ -20,16 +20,16 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
-        <input type="text" [(ngModel)]="name" name="name" class="input" required />
+        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
+        <input id="name" type="text" [(ngModel)]="name" name="name" class="input" required />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Username</label>
-        <input type="text" [(ngModel)]="username" name="username" class="input" required />
+        <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Username</label>
+        <input id="username" type="text" [(ngModel)]="username" name="username" class="input" required />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Bio</label>
-        <textarea [(ngModel)]="bio" name="bio" rows="4" class="input resize-none" placeholder="Tell us about yourself..."></textarea>
+        <label for="bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Bio</label>
+        <textarea id="bio" [(ngModel)]="bio" name="bio" rows="4" class="input resize-none" placeholder="Tell us about yourself..."></textarea>
       </div>
       <div class="flex gap-3">
         <button type="submit" [disabled]="saving()" class="btn-primary disabled:opacity-50">

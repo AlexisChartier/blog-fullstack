@@ -11,7 +11,7 @@ import { AuthService } from './core/services/auth.service';
   templateUrl: './app.component.html',
 })
 export class AppComponent {
-  private auth = inject(AuthService);
+  private readonly auth = inject(AuthService);
 
   readonly user = this.auth.user;
   readonly isAuthenticated = this.auth.isAuthenticated;
