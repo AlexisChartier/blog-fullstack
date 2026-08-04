@@ -12,7 +12,7 @@ describe('PostListComponent', () => {
   let component: PostListComponent;
   let fixture: ComponentFixture<PostListComponent>;
   let httpMock: HttpTestingController;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let router: Router;
 
   const mockPost: Post = {
     id: 1, title: 'Test Post', slug: 'test-post', excerpt: 'Excerpt', content: 'Content',
@@ -48,8 +48,6 @@ describe('PostListComponent', () => {
   }
 
   beforeEach(async () => {
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-
     await TestBed.configureTestingModule({
       imports: [PostListComponent, RouterTestingModule],
       providers: [
@@ -57,7 +55,6 @@ describe('PostListComponent', () => {
         provideHttpClientTesting(),
         BlogService,
         { provide: API_URL, useValue: '/api' },
-        { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -67,6 +64,9 @@ describe('PostListComponent', () => {
         },
       ],
     }).compileComponents();
+
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
 
     fixture = TestBed.createComponent(PostListComponent);
     component = fixture.componentInstance;
@@ -148,6 +148,35 @@ describe('PostListComponent', () => {
       expect(component.pageTitle()).toBe('#angular');
       expect(component.currentFilter().tag).toBe('angular');
     });
+
+    it('should not set filter when slug is from unknown route segment', () => {
+      const route = TestBed.inject(ActivatedRoute);
+      (route.data as any) = { subscribe: (cb: (d: Data) => void) => cb({} as Data) };
+      (route.snapshot as any) = {
+        queryParams: {},
+        paramMap: { get: (key: string) => key === 'slug' ? 'unknown' : null },
+        url: [{ path: 'profile' }],
+      };
+      component.ngOnInit();
+      expect(component.pageTitle()).toBe('Latest Posts');
+      expect(component.currentFilter()).toEqual({});
+    });
+
+    it('should load only categories from route data (no posts, no tags)', () => {
+      setupRouteData({ categories: mockCategories });
+      component.ngOnInit();
+      expect(component.categories()).toEqual(mockCategories);
+      expect(component.tags()).toEqual([]);
+      expect(component.posts()).toEqual([]);
+      expect(component.loading()).toBe(true);
+    });
+
+    it('should load only tags from route data (no posts, no categories)', () => {
+      setupRouteData({ tags: mockTags });
+      component.ngOnInit();
+      expect(component.tags()).toEqual(mockTags);
+      expect(component.categories()).toEqual([]);
+    });
   });
 
   describe('loadPosts', () => {
@@ -196,6 +225,24 @@ describe('PostListComponent', () => {
       expect(component.currentPage()).toBe(5);
     });
 
+    it('nextPage should scroll to top', fakeAsync(() => {
+      const scrollSpy = spyOn(window, 'scrollTo') as any;
+      component.nextPage();
+      expect(scrollSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+      const req = httpMock.expectOne('/api/posts?page=3');
+      req.flush(mockPaginated);
+      tick();
+    }));
+
+    it('prevPage should scroll to top', fakeAsync(() => {
+      const scrollSpy = spyOn(window, 'scrollTo') as any;
+      component.prevPage();
+      expect(scrollSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+      const req = httpMock.expectOne('/api/posts?page=1');
+      req.flush(mockPaginated);
+      tick();
+    }));
+
     it('prevPage should load previous page', fakeAsync(() => {
       component.prevPage();
       const req = httpMock.expectOne('/api/posts?page=1');
@@ -239,6 +286,16 @@ describe('PostListComponent', () => {
       expect(component.currentPage()).toBe(2);
       httpMock.expectNone('/api/posts?page=6');
     });
+
+    it('goToPage should scroll to top on valid page', fakeAsync(() => {
+      const scrollSpy = spyOn(window, 'scrollTo') as any;
+      component.lastPage.set(5);
+      component.goToPage(4);
+      expect(scrollSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+      const req = httpMock.expectOne('/api/posts?page=4');
+      req.flush(mockPaginated);
+      tick();
+    }));
   });
 
   describe('pageNumbers getter', () => {
@@ -305,6 +362,28 @@ describe('PostListComponent', () => {
       req.flush(mockPaginated);
       tick();
     }));
+
+    it('should clear previous timeout on rapid typing', fakeAsync(() => {
+      component.searchQuery.set('first');
+      component.onSearchInput();
+      component.searchQuery.set('second');
+      component.onSearchInput();
+      tick(400);
+      expect(component.currentFilter().search).toBe('second');
+      const req = httpMock.expectOne('/api/posts?page=1&search=second');
+      req.flush(mockPaginated);
+      tick();
+    }));
+
+    it('should trim whitespace from search query', fakeAsync(() => {
+      component.searchQuery.set('  spaced query  ');
+      component.onSearchInput();
+      tick(400);
+      expect(component.currentFilter().search).toBe('spaced query');
+      const req = httpMock.expectOne('/api/posts?page=1&search=spaced%20query');
+      req.flush(mockPaginated);
+      tick();
+    }));
   });
 
   describe('clearFilters', () => {
@@ -318,7 +397,7 @@ describe('PostListComponent', () => {
       expect(component.searchQuery()).toBe('');
       expect(component.currentFilter()).toEqual({});
       expect(component.pageTitle()).toBe('Latest Posts');
-      expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
+      expect(router.navigate).toHaveBeenCalledWith(['/']);
 
       const req = httpMock.expectOne('/api/posts?page=1');
       req.flush(mockPaginated);
@@ -350,6 +429,61 @@ describe('PostListComponent', () => {
       fixture.detectChanges();
       const el: HTMLElement = fixture.nativeElement;
       expect(el.textContent).toContain('No posts found');
+    });
+
+    it('should render post cards when posts loaded', () => {
+      component.loading.set(false);
+      component.posts.set([mockPost]);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Test Post');
+      expect(el.textContent).toContain('Author');
+    });
+
+    it('should render categories sidebar', () => {
+      component.categories.set(mockCategories);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Tech');
+    });
+
+    it('should render tags sidebar', () => {
+      component.tags.set(mockTags);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('php');
+    });
+
+    it('should render pagination when lastPage > 1', () => {
+      component.loading.set(false);
+      component.posts.set([mockPost]);
+      component.currentPage.set(1);
+      component.lastPage.set(3);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Prev');
+      expect(el.textContent).toContain('Next');
+    });
+
+    it('should render clear filter badge when filter active', () => {
+      component.currentFilter.set({ search: 'test' });
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Clear filter');
+    });
+
+    it('should render total article count', () => {
+      component.total.set(5);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('5 articles');
+    });
+
+    it('should render singular article count for 1', () => {
+      component.total.set(1);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('1 article');
     });
   });
 });

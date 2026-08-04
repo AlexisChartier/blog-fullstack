@@ -105,6 +105,50 @@ describe('blog.resolvers', () => {
       req.flush(emptyPaginated);
       expect(result).toEqual(emptyPaginated);
     });
+
+    it('should combine search and page params', () => {
+      const route = createRouteSnapshot({}, [], { search: 'test', page: '3' });
+      let result: any;
+      TestBed.runInInjectionContext(() => {
+        (postsResolver(route, {} as any) as any).subscribe((r: any) => { result = r; });
+      });
+      const req = httpMock.expectOne('/api/posts?page=3&search=test');
+      req.flush(emptyPaginated);
+      expect(result).toEqual(emptyPaginated);
+    });
+
+    it('should combine category filter and page param', () => {
+      const route = createRouteSnapshot({ slug: 'tech' }, ['category'], { page: '2' });
+      let result: any;
+      TestBed.runInInjectionContext(() => {
+        (postsResolver(route, {} as any) as any).subscribe((r: any) => { result = r; });
+      });
+      const req = httpMock.expectOne('/api/posts?page=2&category=tech');
+      req.flush(emptyPaginated);
+      expect(result).toEqual(emptyPaginated);
+    });
+
+    it('should combine tag filter and page param', () => {
+      const route = createRouteSnapshot({ slug: 'php' }, ['tag'], { page: '5' });
+      let result: any;
+      TestBed.runInInjectionContext(() => {
+        (postsResolver(route, {} as any) as any).subscribe((r: any) => { result = r; });
+      });
+      const req = httpMock.expectOne('/api/posts?page=5&tag=php');
+      req.flush(emptyPaginated);
+      expect(result).toEqual(emptyPaginated);
+    });
+
+    it('should prioritize search over slug when both present', () => {
+      const route = createRouteSnapshot({ slug: 'tech' }, ['category'], { search: 'override' });
+      let result: any;
+      TestBed.runInInjectionContext(() => {
+        (postsResolver(route, {} as any) as any).subscribe((r: any) => { result = r; });
+      });
+      const req = httpMock.expectOne('/api/posts?page=1&search=override&category=tech');
+      req.flush(emptyPaginated);
+      expect(result).toEqual(emptyPaginated);
+    });
   });
 
   describe('categoriesResolver', () => {

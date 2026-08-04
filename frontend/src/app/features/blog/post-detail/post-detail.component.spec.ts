@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { RouterTestingModule } from '@angular/router/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { Meta } from '@angular/platform-browser';
 import { PostDetailComponent } from './post-detail.component';
 import { BlogService } from '../../../core/services/blog.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -83,6 +84,25 @@ describe('PostDetailComponent', () => {
       expect(component.post()).toEqual(mockPost);
       expect(component.loading()).toBe(false);
     });
+
+    it('should set document title from post title', () => {
+      expect(document.title).toBe('Test Post — DevBlog');
+    });
+
+    it('should set meta description from excerpt', () => {
+      const metaService = TestBed.inject(Meta);
+      const descriptionTag = metaService.getTag('name="description"');
+      expect(descriptionTag?.getAttribute('content')).toBe('Excerpt');
+    });
+
+    it('should remain loading when no post in route data', () => {
+      const route = TestBed.inject(ActivatedRoute);
+      (route.data as any) = { subscribe: (cb: (d: Data) => void) => cb({} as Data) };
+      const f = TestBed.createComponent(PostDetailComponent);
+      f.detectChanges();
+      expect(f.componentInstance.loading()).toBe(true);
+      expect(f.componentInstance.post()).toBeNull();
+    });
   });
 
   describe('loadPost', () => {
@@ -105,6 +125,20 @@ describe('PostDetailComponent', () => {
       tick();
 
       expect(component.loading()).toBe(false);
+    }));
+
+    it('should use post title for meta description when excerpt is null', fakeAsync(() => {
+      const postNoExcerpt = { ...mockPost, excerpt: null, title: 'No Excerpt Post' };
+      component.loadPost('no-excerpt');
+
+      const req = httpMock.expectOne('/api/posts/no-excerpt');
+      req.flush({ data: postNoExcerpt });
+      tick();
+
+      expect(component.post()?.title).toBe('No Excerpt Post');
+      const metaService = TestBed.inject(Meta);
+      const descTag = metaService.getTag('name="description"');
+      expect(descTag?.getAttribute('content')).toBe('No Excerpt Post');
     }));
   });
 
@@ -193,6 +227,20 @@ describe('PostDetailComponent', () => {
       expect(component.replyingTo()).toBeNull();
       expect(component.commenting()).toBe(false);
     }));
+
+    it('submitReply should set commenting false on error', fakeAsync(() => {
+      component.post.set(mockPost);
+      component.replyingTo.set(1);
+      component.replyContent.set('A reply');
+
+      component.submitReply(1);
+
+      const req = httpMock.expectOne('/api/posts/1/comments');
+      req.flush({}, { status: 500, statusText: 'Server Error' });
+      tick();
+
+      expect(component.commenting()).toBe(false);
+    }));
   });
 
   describe('deleteComment', () => {
@@ -238,6 +286,25 @@ describe('PostDetailComponent', () => {
       expect(clipboardSpy).toHaveBeenCalled();
       expect(component.copied()).toBe(true);
       (navigator as any).share = origShare;
+    });
+
+    it('should reset copied signal after 2 seconds', fakeAsync(() => {
+      component.post.set(mockPost);
+      const origShare = navigator.share;
+      (navigator as any).share = undefined;
+      spyOn(navigator.clipboard, 'writeText').and.returnValue(Promise.resolve() as any);
+      component.sharePost();
+      expect(component.copied()).toBe(true);
+      tick(2000);
+      expect(component.copied()).toBe(false);
+      (navigator as any).share = origShare;
+    }));
+
+    it('should not share when post is null', () => {
+      component.post.set(null);
+      const shareSpy = spyOn(navigator, 'share').and.returnValue(Promise.resolve() as any);
+      component.sharePost();
+      expect(shareSpy).toHaveBeenCalledWith({ title: undefined, url: window.location.href });
     });
   });
 
@@ -287,6 +354,73 @@ describe('PostDetailComponent', () => {
       fixture.detectChanges();
       const el: HTMLElement = fixture.nativeElement;
       expect(el.textContent).toContain('Login to join the conversation.');
+    });
+
+    it('should render comment form when authenticated', () => {
+      isAuthenticatedSignal.set(true);
+      userSignal.set({ id: 1, name: 'User', username: 'user', avatar_url: null, bio: null, created_at: '' });
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('textarea')).toBeTruthy();
+    });
+
+    it('should render post content', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('This is test content');
+    });
+
+    it('should render author name', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Author');
+    });
+
+    it('should render category badges', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Tech');
+    });
+
+    it('should render tag badges', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('php');
+    });
+
+    it('should render comments count', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('(1)');
+    });
+
+    it('should render existing comment content', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Great post!');
+    });
+
+    it('should render post not found when not loading and no post', () => {
+      component.loading.set(false);
+      component.post.set(null);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Post not found');
+    });
+
+    it('should render Back to Home link when post not found', () => {
+      component.loading.set(false);
+      component.post.set(null);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Back to Home');
+    });
+
+    it('should render Share button', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Share');
+    });
+
+    it('should render reply button when authenticated', () => {
+      isAuthenticatedSignal.set(true);
+      userSignal.set({ id: 1, name: 'User', username: 'user', avatar_url: null, bio: null, created_at: '' });
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Reply');
     });
   });
 });
