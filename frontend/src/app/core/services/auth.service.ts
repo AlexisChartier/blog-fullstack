@@ -11,10 +11,10 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly apiUrl = inject(API_URL);
 
-  private _user = signal<User | null>(null);
-  private _loading = signal(false);
-  private _error = signal<string | null>(null);
-  private _sessionChecked = signal(false);
+  private readonly _user = signal<User | null>(null);
+  private readonly _loading = signal(false);
+  private readonly _error = signal<string | null>(null);
+  private readonly _sessionChecked = signal(false);
 
   readonly user = this._user.asReadonly();
   readonly loading = this._loading.asReadonly();

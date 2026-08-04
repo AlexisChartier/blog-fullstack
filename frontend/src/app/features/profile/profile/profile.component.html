@@ -48,7 +48,7 @@
   <div>
     <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Recent Posts</h2>
     <div class="space-y-4">
-      <article *ngFor="let post of posts()" class="card-hover p-5 cursor-pointer" (click)="router.navigate(['/post', post.slug])">
+      <article *ngFor="let post of posts()" class="card-hover p-5 cursor-pointer" tabindex="0" role="link" (click)="router.navigate(['/post', post.slug])" (keydown.enter)="router.navigate(['/post', post.slug])">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ post.title }}</h3>
         <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mt-2 flex-wrap">
           <span class="whitespace-nowrap">{{ post.published_at | date: 'MMM d, y' }}</span>

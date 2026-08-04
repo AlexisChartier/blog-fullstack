@@ -68,6 +68,7 @@
             class="input resize-none"
             rows="3"
             placeholder="Share your thoughts..."
+            aria-label="New comment"
           ></textarea>
           <div class="flex justify-end mt-2">
             <button (click)="submitComment()" [disabled]="commenting() || !newComment().trim()"
@@ -122,6 +123,7 @@
                 class="input text-sm resize-none"
                 rows="2"
                 placeholder="Write a reply..."
+                aria-label="Reply to comment"
               ></textarea>
               <div class="flex gap-2 mt-2">
                 <button (click)="submitReply(comment.id)" [disabled]="commenting() || !replyContent().trim()" class="btn-primary text-xs disabled:opacity-50 disabled:cursor-not-allowed">

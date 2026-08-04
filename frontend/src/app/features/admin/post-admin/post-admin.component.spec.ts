@@ -94,7 +94,7 @@ describe('PostAdminComponent', () => {
     it('should not delete when confirm is cancelled', () => {
       spyOn(window, 'confirm').and.returnValue(false);
       component.deletePost(1);
-      expect(component.posts().length).toBe(2);
+      expect(component.posts()).toHaveSize(2);
       httpMock.expectNone('/api/posts/1');
     });
 

@@ -156,7 +156,7 @@ describe('RegisterComponent', () => {
     it('should render two password inputs', () => {
       const el: HTMLElement = fixture.nativeElement;
       const passwordInputs = el.querySelectorAll('input[type="password"]');
-      expect(passwordInputs.length).toBe(2);
+      expect(passwordInputs).toHaveSize(2);
     });
 
     it('should render submit button', () => {

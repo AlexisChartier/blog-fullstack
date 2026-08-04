@@ -38,10 +38,10 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Categories</label>
-      <div class="flex flex-wrap gap-2">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" id="categories-label">Categories</label>
+      <div class="flex flex-wrap gap-2" role="group" aria-labelledby="categories-label">
         <label *ngFor="let cat of categories()" class="cursor-pointer">
-          <input type="checkbox" [checked]="selectedCategories().includes(cat.id)" (change)="toggleCategory(cat.id)" class="hidden" />
+          <input type="checkbox" [checked]="selectedCategories().includes(cat.id)" (change)="toggleCategory(cat.id)" class="hidden" [attr.aria-label]="cat.name" />
           <span [class]="selectedCategories().includes(cat.id) ? 'badge-primary border-2 border-primary-300 dark:border-primary-700' : 'badge-gray border-2 border-transparent'">
             {{ cat.name }}
           </span>
@@ -50,10 +50,10 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags</label>
-      <div class="flex flex-wrap gap-2">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" id="tags-label">Tags</label>
+      <div class="flex flex-wrap gap-2" role="group" aria-labelledby="tags-label">
         <label *ngFor="let tag of tags()" class="cursor-pointer">
-          <input type="checkbox" [checked]="selectedTags().includes(tag.id)" (change)="toggleTag(tag.id)" class="hidden" />
+          <input type="checkbox" [checked]="selectedTags().includes(tag.id)" (change)="toggleTag(tag.id)" class="hidden" [attr.aria-label]="tag.name" />
           <span [class]="selectedTags().includes(tag.id) ? 'badge-accent border-2 border-accent-300 dark:border-accent-700' : 'badge-gray border-2 border-transparent'">
             <span class="text-gray-400">#</span>{{ tag.name }}
           </span>
