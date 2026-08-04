@@ -19,8 +19,13 @@
 
     <div>
       <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Content</label>
-      <textarea id="content" [(ngModel)]="content" name="content" rows="14" class="input font-mono text-sm leading-relaxed" placeholder="Write your post content..." required></textarea>
-      <p class="text-xs text-gray-400 dark:text-gray-600 mt-1.5">Markdown support coming soon. Plain text for now.</p>
+      <textarea id="content" [(ngModel)]="content" name="content" rows="14" class="input font-mono text-sm leading-relaxed" placeholder="Write your post content (Markdown supported)..." required></textarea>
+      <p class="text-xs text-gray-400 dark:text-gray-600 mt-1.5">Markdown supported. Use # for headings, **bold**, *italic*, `code`, [links](url), etc.</p>
+    </div>
+
+    <div>
+      <label for="featured_image" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Featured Image URL <span class="text-gray-400">(optional)</span></label>
+      <input id="featured_image" type="url" [(ngModel)]="featuredImage" name="featured_image" class="input" placeholder="https://example.com/image.jpg" />
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

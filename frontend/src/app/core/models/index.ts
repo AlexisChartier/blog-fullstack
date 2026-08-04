@@ -49,6 +49,7 @@ export interface Comment {
   is_approved: boolean;
   created_at: string;
   user: User;
+  post?: { id: number; title: string; slug: string };
   replies?: Comment[];
 }
 

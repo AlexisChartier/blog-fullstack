@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\User;
+use App\Models\UserSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,8 +16,15 @@ class LoginUser
         }
 
         $request->session()->regenerate();
-        $request->user()->forceFill(['session_id' => $request->session()->getId()])->save();
 
-        return $request->user();
+        $user = $request->user();
+
+        UserSession::where('user_id', $user->id)->delete();
+        UserSession::create([
+            'user_id' => $user->id,
+            'session_id' => $request->session()->getId(),
+        ]);
+
+        return $user;
     }
 }

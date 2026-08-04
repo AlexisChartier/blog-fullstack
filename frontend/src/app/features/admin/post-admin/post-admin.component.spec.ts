@@ -4,17 +4,13 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { PostAdminComponent } from './post-admin.component';
 import { BlogService } from '../../../core/services/blog.service';
-import { AuthService } from '../../../core/services/auth.service';
 import { API_URL } from '../../../core/tokens/api-url.token';
 import { Post, Paginated } from '../../../core/models';
-import { signal, WritableSignal } from '@angular/core';
 
 describe('PostAdminComponent', () => {
   let component: PostAdminComponent;
   let fixture: ComponentFixture<PostAdminComponent>;
   let httpMock: HttpTestingController;
-  let authSpy: jasmine.SpyObj<AuthService>;
-  let userSignal: WritableSignal<any>;
 
   const mockPosts: Post[] = [
     { id: 1, title: 'Published Post', slug: 'published-post', excerpt: 'E1', content: 'C1', featured_image: null, status: 'published', published_at: '2026-01-01T00:00:00Z', created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
@@ -28,19 +24,12 @@ describe('PostAdminComponent', () => {
   };
 
   beforeEach(async () => {
-    userSignal = signal({ id: 1, name: 'Admin', username: 'admin', avatar_url: null, bio: null, roles: ['admin'], created_at: '' });
-
-    authSpy = jasmine.createSpyObj('AuthService', [], {
-      user: userSignal.asReadonly(),
-    });
-
     await TestBed.configureTestingModule({
       imports: [PostAdminComponent, RouterTestingModule],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         BlogService,
-        { provide: AuthService, useValue: authSpy },
         { provide: API_URL, useValue: '/api' },
       ],
     }).compileComponents();
@@ -50,7 +39,7 @@ describe('PostAdminComponent', () => {
     httpMock = TestBed.inject(HttpTestingController);
     fixture.detectChanges();
 
-    httpMock.expectOne('/api/posts?page=1').flush(mockPaginated);
+    httpMock.expectOne('/api/auth/my-posts?page=1').flush(mockPaginated);
   });
 
   afterEach(() => {
@@ -68,10 +57,10 @@ describe('PostAdminComponent', () => {
   }));
 
   describe('loadPosts', () => {
-    it('should fetch posts and update signals', fakeAsync(() => {
+    it('should fetch posts from my-posts endpoint and update signals', fakeAsync(() => {
       component.loadPosts();
 
-      const req = httpMock.expectOne('/api/posts?page=1');
+      const req = httpMock.expectOne('/api/auth/my-posts?page=1');
       req.flush(mockPaginated);
       tick();
 
@@ -82,12 +71,29 @@ describe('PostAdminComponent', () => {
     it('should set loading false on error', fakeAsync(() => {
       component.loadPosts();
 
-      const req = httpMock.expectOne('/api/posts?page=1');
+      const req = httpMock.expectOne('/api/auth/my-posts?page=1');
       req.flush({}, { status: 500, statusText: 'Server Error' });
       tick();
 
       expect(component.loading()).toBe(false);
     }));
+  });
+
+  describe('pagination', () => {
+    it('should load next page', fakeAsync(() => {
+      component.lastPage.set(3);
+      component.currentPage.set(1);
+      component.nextPage();
+
+      const req = httpMock.expectOne('/api/auth/my-posts?page=2');
+      req.flush({ ...mockPaginated, data: [], current_page: 2 });
+      tick();
+    }));
+
+    it('should not go before page 1', () => {
+      component.prevPage();
+      httpMock.expectNone('/api/auth/my-posts?page=0');
+    });
   });
 
   describe('deletePost', () => {
@@ -108,21 +114,10 @@ describe('PostAdminComponent', () => {
       deleteReq.flush({ message: 'Deleted' });
       tick();
 
-      const reloadReq = httpMock.expectOne('/api/posts?page=1');
+      const reloadReq = httpMock.expectOne('/api/auth/my-posts?page=1');
       reloadReq.flush(mockPaginated);
       tick();
     }));
-  });
-
-  describe('currentUser getter', () => {
-    it('should return current user from auth service', () => {
-      expect(component.currentUser).toEqual(userSignal());
-    });
-
-    it('should return null when no user', () => {
-      userSignal.set(null);
-      expect(component.currentUser).toBeNull();
-    });
   });
 
   describe('template rendering', () => {

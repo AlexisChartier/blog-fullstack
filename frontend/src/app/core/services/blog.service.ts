@@ -18,6 +18,17 @@ export class BlogService {
     return this.http.get<Paginated<Post>>(`${this.apiUrl}/posts`, { params });
   }
 
+  getMyPosts(page = 1) {
+    const params = new HttpParams().set('page', page);
+    return this.http.get<Paginated<Post>>(`${this.apiUrl}/auth/my-posts`, { params });
+  }
+
+  getMyPost(id: number) {
+    return this.http.get<{ data: Post }>(`${this.apiUrl}/auth/my-posts/${id}`).pipe(
+      map(res => res.data),
+    );
+  }
+
   getPost(slug: string) {
     return this.http.get<{ data: Post }>(`${this.apiUrl}/posts/${slug}`).pipe(
       map(res => res.data),
@@ -44,16 +55,49 @@ export class BlogService {
     return this.getPosts(page, { tag: slug });
   }
 
-  createPost(data: { title?: string; excerpt?: string; content?: string; status?: string; published_at?: string | null; featured_image?: string; categories?: number[]; tags?: number[] }) {
+  createPost(data: { title?: string; excerpt?: string; content?: string; status?: string; published_at?: string | null; featured_image?: string | null; categories?: number[]; tags?: number[] }) {
     return this.http.post<{ message: string; post: Post }>(`${this.apiUrl}/posts`, data);
   }
 
-  updatePost(id: number, data: { title?: string; excerpt?: string; content?: string; status?: string; published_at?: string | null; featured_image?: string; categories?: number[]; tags?: number[] }) {
+  updatePost(id: number, data: { title?: string; excerpt?: string; content?: string; status?: string; published_at?: string | null; featured_image?: string | null; categories?: number[]; tags?: number[] }) {
     return this.http.put<{ message: string; post: Post }>(`${this.apiUrl}/posts/${id}`, data);
   }
 
   deletePost(id: number) {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/posts/${id}`);
+  }
+
+  createCategory(data: { name: string; description?: string | null; slug?: string }) {
+    return this.http.post<{ message: string; category: Category }>(`${this.apiUrl}/categories`, data);
+  }
+
+  updateCategory(id: number, data: { name?: string; description?: string | null; slug?: string }) {
+    return this.http.put<{ message: string; category: Category }>(`${this.apiUrl}/categories/${id}`, data);
+  }
+
+  deleteCategory(id: number) {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/categories/${id}`);
+  }
+
+  createTag(data: { name: string; slug?: string }) {
+    return this.http.post<{ message: string; tag: Tag }>(`${this.apiUrl}/tags`, data);
+  }
+
+  updateTag(id: number, data: { name?: string; slug?: string }) {
+    return this.http.put<{ message: string; tag: Tag }>(`${this.apiUrl}/tags/${id}`, data);
+  }
+
+  deleteTag(id: number) {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/tags/${id}`);
+  }
+
+  getComments(page = 1) {
+    const params = new HttpParams().set('page', page);
+    return this.http.get<Paginated<Comment>>(`${this.apiUrl}/comments`, { params });
+  }
+
+  updateComment(id: number, data: { is_approved: boolean }) {
+    return this.http.put<{ message: string; comment: Comment }>(`${this.apiUrl}/comments/${id}`, data);
   }
 
   addComment(postId: number, content: string, parentId?: number) {

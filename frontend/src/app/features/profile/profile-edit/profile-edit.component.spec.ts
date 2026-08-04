@@ -65,6 +65,37 @@ describe('ProfileEditComponent', () => {
     expect(component.error()).toBe('');
   });
 
+  it('should initialize avatarUrl from user', () => {
+    expect(component.avatarUrl()).toBeNull();
+  });
+
+  it('should start with no selected file', () => {
+    expect(component.selectedFile()).toBeNull();
+  });
+
+  describe('onFileSelected', () => {
+    it('should set selectedFile when a file is chosen', () => {
+      const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+      const input = document.createElement('input');
+      input.type = 'file';
+      Object.defineProperty(input, 'files', { value: [file], writable: false });
+
+      component.onFileSelected({ target: input } as unknown as Event);
+
+      expect(component.selectedFile()).toBe(file);
+    });
+
+    it('should not set selectedFile when no file is chosen', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      Object.defineProperty(input, 'files', { value: [], writable: false });
+
+      component.onFileSelected({ target: input } as unknown as Event);
+
+      expect(component.selectedFile()).toBeNull();
+    });
+  });
+
   it('should handle null user on init', () => {
     userSignal.set(null);
     const f = TestBed.createComponent(ProfileEditComponent);
@@ -127,6 +158,22 @@ describe('ProfileEditComponent', () => {
       const req = httpMock.expectOne('/api/profile');
       req.flush({ message: 'ok' });
     });
+
+    it('should include avatar in FormData when file is selected', fakeAsync(() => {
+      const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+      component.selectedFile.set(file);
+
+      component.submit();
+
+      const req = httpMock.expectOne('/api/profile');
+      expect(req.request.method).toBe('PUT');
+      const body = req.request.body as FormData;
+      expect(body.get('avatar')).toBe(file);
+      req.flush({ message: 'ok' });
+      tick();
+
+      expect(component.selectedFile()).toBeNull();
+    }));
 
     it('should clear success and error on new submit', fakeAsync(() => {
       component.success.set(true);

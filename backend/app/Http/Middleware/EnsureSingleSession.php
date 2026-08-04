@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
+use App\Models\UserSession;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,10 +16,14 @@ class EnsureSingleSession
         $response = $next($request);
 
         if (Auth::check() && $request->hasSession()) {
+            /** @var User $user */
             $user = Auth::user();
             $currentSessionId = $request->session()->getId();
 
-            if ($user->session_id !== null && $user->session_id !== $currentSessionId) {
+            /** @var UserSession|null $activeSession */
+            $activeSession = $user->activeSession()->first();
+
+            if ($activeSession !== null && $activeSession->session_id !== $currentSessionId) {
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
@@ -27,8 +33,12 @@ class EnsureSingleSession
                 ], 401);
             }
 
-            if ($user->session_id !== $currentSessionId) {
-                $user->forceFill(['session_id' => $currentSessionId])->save();
+            if ($activeSession === null || $activeSession->session_id !== $currentSessionId) {
+                UserSession::where('user_id', $user->id)->delete();
+                UserSession::create([
+                    'user_id' => $user->id,
+                    'session_id' => $currentSessionId,
+                ]);
             }
         }
 

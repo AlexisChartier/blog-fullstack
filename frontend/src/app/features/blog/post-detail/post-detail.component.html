@@ -47,7 +47,7 @@
   </header>
 
   <!-- Content -->
-  <div class="prose-content max-w-none text-base sm:text-lg whitespace-pre-wrap break-words">{{ p.content }}</div>
+  <div class="prose-content max-w-none text-base sm:text-lg" [innerHTML]="renderedContent()"></div>
 
   <!-- Comments section -->
   <section class="pt-10 mt-10 border-t border-gray-200 dark:border-gray-800">

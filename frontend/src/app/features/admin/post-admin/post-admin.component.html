@@ -38,7 +38,7 @@
               <span *ngIf="post.status === 'draft'" class="badge-gray">draft</span>
             </td>
             <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-              {{ post.published_at | date: 'MMM d, y' }}
+              {{ post.published_at ? (post.published_at | date: 'MMM d, y') : '—' }}
             </td>
             <td class="px-6 py-4 text-right">
               <div class="flex items-center justify-end gap-2">
@@ -65,7 +65,7 @@
           <div class="flex items-center gap-2">
             <span *ngIf="post.status === 'published'" class="badge-green">published</span>
             <span *ngIf="post.status === 'draft'" class="badge-gray">draft</span>
-            <span class="text-sm text-gray-500 dark:text-gray-400">{{ post.published_at | date: 'MMM d, y' }}</span>
+            <span class="text-sm text-gray-500 dark:text-gray-400">{{ post.published_at ? (post.published_at | date: 'MMM d, y') : '—' }}</span>
           </div>
           <div class="flex items-center gap-2">
             <a [routerLink]="['/admin/posts', post.id, 'edit']" class="btn-ghost text-sm">
@@ -87,5 +87,18 @@
       <p class="text-gray-500 dark:text-gray-400 mb-2">No posts yet.</p>
       <a routerLink="/admin/posts/new" class="btn-primary text-sm mt-2">Create your first post</a>
     </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading() && lastPage() > 1" class="flex items-center justify-center gap-2 pt-4 flex-wrap">
+    <button (click)="prevPage()" [disabled]="currentPage() === 1" class="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed">
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Prev
+    </button>
+    <span class="text-sm text-gray-500 dark:text-gray-400 px-2">{{ currentPage() }} / {{ lastPage() }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage() === lastPage()" class="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed">
+      Next
+      <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </button>
   </div>
 </div>

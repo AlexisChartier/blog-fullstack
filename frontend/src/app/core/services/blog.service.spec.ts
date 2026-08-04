@@ -113,6 +113,49 @@ describe('BlogService', () => {
     }));
   });
 
+  describe('getMyPosts', () => {
+    it('should GET my-posts with page param', fakeAsync(() => {
+      service.getMyPosts(2).subscribe(res => {
+        expect(res).toEqual(mockPaginated);
+      });
+
+      const req = httpMock.expectOne('/api/auth/my-posts?page=2');
+      expect(req.request.method).toBe('GET');
+      req.flush(mockPaginated);
+      tick();
+    }));
+
+    it('should default to page 1', fakeAsync(() => {
+      service.getMyPosts().subscribe(res => {
+        expect(res).toEqual(mockPaginated);
+      });
+
+      const req = httpMock.expectOne('/api/auth/my-posts?page=1');
+      expect(req.request.method).toBe('GET');
+      req.flush(mockPaginated);
+      tick();
+    }));
+
+    it('should return drafts and published posts', fakeAsync(() => {
+      const draftsAndPublished = {
+        ...mockPaginated,
+        data: [
+          { ...mockPaginated.data[0], status: 'published' },
+          { ...mockPaginated.data[1], status: 'draft' },
+        ],
+      };
+      service.getMyPosts(1).subscribe(res => {
+        expect(res.data).toHaveSize(2);
+        expect(res.data[0].status).toBe('published');
+        expect(res.data[1].status).toBe('draft');
+      });
+
+      const req = httpMock.expectOne('/api/auth/my-posts?page=1');
+      req.flush(draftsAndPublished);
+      tick();
+    }));
+  });
+
   describe('getPost', () => {
     it('should GET post by slug and unwrap data', fakeAsync(() => {
       service.getPost('test-post').subscribe(post => {
@@ -250,6 +293,145 @@ describe('BlogService', () => {
       const req = httpMock.expectOne('/api/comments/10');
       expect(req.request.method).toBe('DELETE');
       req.flush({ message: 'Comment deleted' });
+      tick();
+    }));
+  });
+
+  describe('getMyPost', () => {
+    it('should GET single post by id and unwrap data', fakeAsync(() => {
+      service.getMyPost(5).subscribe(post => {
+        expect(post).toEqual(mockPost);
+      });
+
+      const req = httpMock.expectOne('/api/auth/my-posts/5');
+      expect(req.request.method).toBe('GET');
+      req.flush({ data: mockPost });
+      tick();
+    }));
+  });
+
+  describe('createCategory', () => {
+    it('should POST new category', fakeAsync(() => {
+      const payload = { name: 'New Cat', description: null };
+      service.createCategory(payload).subscribe(res => {
+        expect(res.message).toBe('Category created');
+      });
+
+      const req = httpMock.expectOne('/api/categories');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(payload);
+      req.flush({ message: 'Category created', category: { ...mockCategories[0], name: 'New Cat' } });
+      tick();
+    }));
+  });
+
+  describe('updateCategory', () => {
+    it('should PUT updated category', fakeAsync(() => {
+      const payload = { name: 'Updated Name' };
+      service.updateCategory(1, payload).subscribe(res => {
+        expect(res.message).toBe('Category updated');
+      });
+
+      const req = httpMock.expectOne('/api/categories/1');
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(payload);
+      req.flush({ message: 'Category updated', category: mockCategories[0] });
+      tick();
+    }));
+  });
+
+  describe('deleteCategory', () => {
+    it('should DELETE category by id', fakeAsync(() => {
+      service.deleteCategory(1).subscribe(res => {
+        expect(res.message).toBe('Category deleted');
+      });
+
+      const req = httpMock.expectOne('/api/categories/1');
+      expect(req.request.method).toBe('DELETE');
+      req.flush({ message: 'Category deleted' });
+      tick();
+    }));
+  });
+
+  describe('createTag', () => {
+    it('should POST new tag', fakeAsync(() => {
+      const payload = { name: 'New Tag' };
+      service.createTag(payload).subscribe(res => {
+        expect(res.message).toBe('Tag created');
+      });
+
+      const req = httpMock.expectOne('/api/tags');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(payload);
+      req.flush({ message: 'Tag created', tag: { ...mockTags[0], name: 'New Tag' } });
+      tick();
+    }));
+  });
+
+  describe('updateTag', () => {
+    it('should PUT updated tag', fakeAsync(() => {
+      const payload = { name: 'Updated Tag' };
+      service.updateTag(1, payload).subscribe(res => {
+        expect(res.message).toBe('Tag updated');
+      });
+
+      const req = httpMock.expectOne('/api/tags/1');
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(payload);
+      req.flush({ message: 'Tag updated', tag: mockTags[0] });
+      tick();
+    }));
+  });
+
+  describe('deleteTag', () => {
+    it('should DELETE tag by id', fakeAsync(() => {
+      service.deleteTag(1).subscribe(res => {
+        expect(res.message).toBe('Tag deleted');
+      });
+
+      const req = httpMock.expectOne('/api/tags/1');
+      expect(req.request.method).toBe('DELETE');
+      req.flush({ message: 'Tag deleted' });
+      tick();
+    }));
+  });
+
+  describe('getComments', () => {
+    it('should GET comments with page param', fakeAsync(() => {
+      const mockCommentPaginated = {
+        data: [mockComment],
+        current_page: 1, last_page: 1, per_page: 20, total: 1,
+        from: 1, to: 1, prev_page_url: null, next_page_url: null,
+      };
+      service.getComments(2).subscribe(res => {
+        expect(res).toEqual(mockCommentPaginated);
+      });
+
+      const req = httpMock.expectOne('/api/comments?page=2');
+      expect(req.request.method).toBe('GET');
+      req.flush(mockCommentPaginated);
+      tick();
+    }));
+
+    it('should default to page 1', fakeAsync(() => {
+      service.getComments().subscribe();
+
+      const req = httpMock.expectOne('/api/comments?page=1');
+      req.flush({ data: [], current_page: 1, last_page: 1, per_page: 20, total: 0, from: null, to: null, prev_page_url: null, next_page_url: null });
+      tick();
+    }));
+  });
+
+  describe('updateComment', () => {
+    it('should PUT comment moderation', fakeAsync(() => {
+      service.updateComment(1, { is_approved: true }).subscribe(res => {
+        expect(res.message).toBe('Comment updated');
+      });
+
+      const req = httpMock.expectOne('/api/comments/1');
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual({ is_approved: true });
+      req.flush({ message: 'Comment updated', comment: { ...mockComment, is_approved: true } });
       tick();
     }));
   });

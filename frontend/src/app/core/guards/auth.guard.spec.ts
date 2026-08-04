@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from '@angular/router';
-import { authGuard, authorGuard } from './auth.guard';
+import { authGuard, authorGuard, adminGuard } from './auth.guard';
 import { AuthService } from '../services/auth.service';
 import { signal, WritableSignal } from '@angular/core';
 import { firstValueFrom, isObservable } from 'rxjs';
@@ -127,6 +127,57 @@ describe('authorGuard', () => {
   it('should wait for session check then redirect when not author', async () => {
     const { sessionCheckedSignal, setAuth, setRole, routerSpy } = setupAuth({ isAuthenticated: false, hasRole: false, sessionChecked: false });
     const result = TestBed.runInInjectionContext(() => authorGuard(createMockSnapshot(), createMockState()));
+    expect(isObservable(result)).toBe(true);
+
+    setAuth(true);
+    setRole(false);
+    sessionCheckedSignal.set(true);
+
+    const allowed = await firstValueFrom(result as any);
+    expect(allowed).not.toBe(true);
+    expect(routerSpy.parseUrl).toHaveBeenCalledWith('/');
+  });
+});
+
+describe('adminGuard', () => {
+  it('should allow navigation when authenticated and has admin role', () => {
+    const { routerSpy } = setupAuth({ isAuthenticated: true, hasRole: true, sessionChecked: true });
+    const result = TestBed.runInInjectionContext(() => adminGuard(createMockSnapshot(), createMockState()));
+    expect(result).toBe(true);
+    expect(routerSpy.parseUrl).not.toHaveBeenCalled();
+  });
+
+  it('should redirect to / when authenticated but not admin', () => {
+    const { routerSpy } = setupAuth({ isAuthenticated: true, hasRole: false, sessionChecked: true });
+    const result = TestBed.runInInjectionContext(() => adminGuard(createMockSnapshot(), createMockState()));
+    expect(routerSpy.parseUrl).toHaveBeenCalledWith('/');
+    expect((result as unknown as { url: string }).url).toBe('/');
+  });
+
+  it('should redirect to / when unauthenticated and session checked', () => {
+    const { routerSpy } = setupAuth({ isAuthenticated: false, hasRole: false, sessionChecked: true });
+    const result = TestBed.runInInjectionContext(() => adminGuard(createMockSnapshot(), createMockState()));
+    expect(routerSpy.parseUrl).toHaveBeenCalledWith('/');
+    expect((result as unknown as { url: string }).url).toBe('/');
+  });
+
+  it('should wait for session check then allow when authenticated admin', async () => {
+    const { sessionCheckedSignal, setAuth, setRole, routerSpy } = setupAuth({ isAuthenticated: false, hasRole: false, sessionChecked: false });
+    const result = TestBed.runInInjectionContext(() => adminGuard(createMockSnapshot(), createMockState()));
+    expect(isObservable(result)).toBe(true);
+
+    setAuth(true);
+    setRole(true);
+    sessionCheckedSignal.set(true);
+
+    const allowed = await firstValueFrom(result as any);
+    expect(allowed).toBe(true);
+    expect(routerSpy.parseUrl).not.toHaveBeenCalled();
+  });
+
+  it('should wait for session check then redirect when not admin', async () => {
+    const { sessionCheckedSignal, setAuth, setRole, routerSpy } = setupAuth({ isAuthenticated: false, hasRole: false, sessionChecked: false });
+    const result = TestBed.runInInjectionContext(() => adminGuard(createMockSnapshot(), createMockState()));
     expect(isObservable(result)).toBe(true);
 
     setAuth(true);

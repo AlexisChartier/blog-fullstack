@@ -43,3 +43,23 @@ export const authorGuard: CanActivateFn = () => {
 
   return router.parseUrl('/');
 };
+
+export const adminGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  if (auth.isAuthenticated() && auth.hasRole('admin')) return true;
+
+  if (!auth.sessionChecked()) {
+    return toObservable(auth.sessionChecked).pipe(
+      filter(checked => checked),
+      take(1),
+      map(() => {
+        if (auth.isAuthenticated() && auth.hasRole('admin')) return true;
+        return router.parseUrl('/');
+      }),
+    );
+  }
+
+  return router.parseUrl('/');
+};

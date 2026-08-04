@@ -233,6 +233,42 @@ describe('AppComponent', () => {
       expect(el.textContent).not.toContain('Dashboard');
     });
 
+    it('should show Categories link when user is admin', () => {
+      isAuthenticatedSignal.set(true);
+      userSignal.set({ id: 1, name: 'Admin', username: 'admin', avatar_url: null, bio: null, roles: ['admin'], created_at: '' });
+      component.profileOpen.set(true);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Categories');
+    });
+
+    it('should show Tags link when user is admin', () => {
+      isAuthenticatedSignal.set(true);
+      userSignal.set({ id: 1, name: 'Admin', username: 'admin', avatar_url: null, bio: null, roles: ['admin'], created_at: '' });
+      component.profileOpen.set(true);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Tags');
+    });
+
+    it('should show Comments link when user is admin', () => {
+      isAuthenticatedSignal.set(true);
+      userSignal.set({ id: 1, name: 'Admin', username: 'admin', avatar_url: null, bio: null, roles: ['admin'], created_at: '' });
+      component.profileOpen.set(true);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Comments');
+    });
+
+    it('should not show Categories link when user is not admin', () => {
+      isAuthenticatedSignal.set(true);
+      userSignal.set({ id: 2, name: 'Author', username: 'author', avatar_url: null, bio: null, roles: ['author'], created_at: '' });
+      component.profileOpen.set(true);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).not.toContain('Categories');
+    });
+
     it('should have router-outlet', () => {
       const el: HTMLElement = fixture.nativeElement;
       expect(el.querySelector('router-outlet')).toBeTruthy();

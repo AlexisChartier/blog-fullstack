@@ -24,6 +24,7 @@ export class PostFormComponent implements OnInit {
   title = signal('');
   excerpt = signal('');
   content = signal('');
+  featuredImage = signal('');
   status = signal<'draft' | 'published'>('draft');
   publishedAt = signal('');
 
@@ -49,17 +50,20 @@ export class PostFormComponent implements OnInit {
   }
 
   loadPost(id: number) {
-    this.blogService.getPosts(1).subscribe(res => {
-      const post = res.data.find(p => p.id === id);
-      if (post) {
+    this.blogService.getMyPost(id).subscribe({
+      next: (post) => {
         this.title.set(post.title);
         this.excerpt.set(post.excerpt ?? '');
         this.content.set(post.content);
+        this.featuredImage.set(post.featured_image ?? '');
         this.status.set(post.status);
         this.publishedAt.set(post.published_at ?? '');
         this.selectedCategories.set(post.categories?.map(c => c.id) ?? []);
         this.selectedTags.set(post.tags?.map(t => t.id) ?? []);
-      }
+      },
+      error: () => {
+        this.error.set('Post not found.');
+      },
     });
   }
 
@@ -87,6 +91,7 @@ export class PostFormComponent implements OnInit {
       title: this.title(),
       excerpt: this.excerpt(),
       content: this.content(),
+      featured_image: this.featuredImage() || null,
       status: this.status(),
       published_at: this.publishedAt() || null,
       categories: this.selectedCategories(),

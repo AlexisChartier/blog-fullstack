@@ -18,6 +18,8 @@ export class ProfileEditComponent {
   name = signal('');
   username = signal('');
   bio = signal('');
+  avatarUrl = signal<string | null>(null);
+  selectedFile = signal<File | null>(null);
   saving = signal(false);
   success = signal(false);
   error = signal('');
@@ -28,6 +30,17 @@ export class ProfileEditComponent {
       this.name.set(user.name);
       this.username.set(user.username);
       this.bio.set(user.bio ?? '');
+      this.avatarUrl.set(user.avatar_url);
+    }
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile.set(input.files[0]);
+      const reader = new FileReader();
+      reader.onload = () => this.avatarUrl.set(reader.result as string);
+      reader.readAsDataURL(input.files[0]);
     }
   }
 
@@ -40,12 +53,16 @@ export class ProfileEditComponent {
     formData.append('name', this.name());
     formData.append('username', this.username());
     formData.append('bio', this.bio());
+    if (this.selectedFile()) {
+      formData.append('avatar', this.selectedFile()!);
+    }
 
     this.userService.updateProfile(formData).subscribe({
       next: () => {
         this.auth.fetchUser();
         this.saving.set(false);
         this.success.set(true);
+        this.selectedFile.set(null);
       },
       error: (err) => {
         this.saving.set(false);

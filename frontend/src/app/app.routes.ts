@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, authorGuard } from './core/guards/auth.guard';
+import { authGuard, authorGuard, adminGuard } from './core/guards/auth.guard';
 import { postsResolver, categoriesResolver, tagsResolver, postResolver, profileResolver } from './core/resolvers/blog.resolvers';
 
 export const routes: Routes = [
@@ -71,6 +71,21 @@ export const routes: Routes = [
     path: 'admin/posts/:id/edit',
     canActivate: [authorGuard],
     loadComponent: () => import('./features/admin/post-form/post-form.component').then(m => m.PostFormComponent),
+  },
+  {
+    path: 'admin/categories',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./features/admin/category-admin/category-admin.component').then(m => m.CategoryAdminComponent),
+  },
+  {
+    path: 'admin/tags',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./features/admin/tag-admin/tag-admin.component').then(m => m.TagAdminComponent),
+  },
+  {
+    path: 'admin/comments',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./features/admin/comment-admin/comment-admin.component').then(m => m.CommentAdminComponent),
   },
   {
     path: '**',

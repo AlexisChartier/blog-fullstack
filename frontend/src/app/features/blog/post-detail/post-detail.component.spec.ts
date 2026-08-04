@@ -85,6 +85,10 @@ describe('PostDetailComponent', () => {
       expect(component.loading()).toBe(false);
     });
 
+    it('should render markdown content into renderedContent signal', () => {
+      expect(component.renderedContent()).toContain('This is test content');
+    });
+
     it('should set document title from post title', () => {
       expect(document.title).toBe('Test Post — DevBlog');
     });
@@ -139,6 +143,16 @@ describe('PostDetailComponent', () => {
       tick();
 
       expect(component.loading()).toBe(false);
+    }));
+
+    it('should render markdown content on loadPost', fakeAsync(() => {
+      component.loadPost('another-post');
+
+      const req = httpMock.expectOne('/api/posts/another-post');
+      req.flush({ data: { ...mockPost, slug: 'another-post', content: '## Heading' } });
+      tick();
+
+      expect(component.renderedContent()).toContain('Heading');
     }));
 
     it('should use post title for meta description when excerpt is null', fakeAsync(() => {

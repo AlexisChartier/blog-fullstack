@@ -38,7 +38,7 @@ class PostFactory extends Factory
 
         return [
             'title' => $title,
-            'slug' => Str::slug($title),
+            'slug' => Str::slug($title).'-'.fake()->randomNumber(5),
             'excerpt' => fake()->paragraph(2),
             'content' => fake()->paragraphs($paragraphCount, true),
             'status' => 'published',

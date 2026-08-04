@@ -8,6 +8,8 @@ use App\Actions\RegisterUser;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
+use App\Http\Resources\PostResource;
+use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -50,6 +52,29 @@ class AuthController extends Controller
     {
         return response()->json([
             'user' => $request->user()->load('roles'),
+        ]);
+    }
+
+    public function myPosts(Request $request): JsonResponse
+    {
+        $posts = $request->user()
+            ->posts()
+            ->with(['categories:id,name,slug', 'tags:id,name,slug'])
+            ->orderByDesc('created_at')
+            ->paginate(10);
+
+        return PostResource::collection($posts)
+            ->response();
+    }
+
+    public function myPost(Request $request, Post $post): JsonResponse
+    {
+        abort_unless($post->author_id === $request->user()->id || $request->user()->isAdmin(), 403);
+
+        $post->load(['categories:id,name,slug', 'tags:id,name,slug']);
+
+        return response()->json([
+            'data' => new PostResource($post),
         ]);
     }
 }

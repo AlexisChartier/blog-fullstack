@@ -1,6 +1,10 @@
 <?php
 
+use App\Models\Category;
+use App\Models\Post;
+use App\Models\Tag;
 use App\Models\User;
+use App\Models\UserSession;
 
 describe('Auth - Register', function () {
     it('registers a new user successfully', function () {
@@ -141,19 +145,24 @@ describe('Auth - Logout', function () {
             ->assertUnauthorized();
     });
 
-    it('clears session_id on logout', function () {
-        $user = User::factory()->create(['session_id' => 'some-session']);
+    it('clears session on logout', function () {
+        $user = User::factory()->create();
         $this->actingAs($user);
+
+        UserSession::create([
+            'user_id' => $user->id,
+            'session_id' => 'some-session',
+        ]);
 
         $this->withExceptionHandling()->postJson('/api/auth/logout')
             ->assertOk();
 
-        expect($user->fresh()->session_id)->toBeNull();
+        expect(UserSession::where('user_id', $user->id)->exists())->toBeFalse();
     });
 });
 
 describe('Auth - Session Management', function () {
-    it('stores session_id on login', function () {
+    it('stores session on login', function () {
         $user = User::factory()->create([
             'email' => 'session@example.com',
             'password' => bcrypt('Password123!'),
@@ -164,10 +173,10 @@ describe('Auth - Session Management', function () {
             'password' => 'Password123!',
         ])->assertOk();
 
-        expect($user->fresh()->session_id)->not->toBeNull();
+        expect(UserSession::where('user_id', $user->id)->exists())->toBeTrue();
     });
 
-    it('stores session_id on register', function () {
+    it('stores session on register', function () {
         $this->withExceptionHandling()->postJson('/api/auth/register', [
             'name' => 'Session User',
             'username' => 'sessionuser',
@@ -177,13 +186,17 @@ describe('Auth - Session Management', function () {
         ])->assertCreated();
 
         $user = User::where('email', 'sessionuser@example.com')->first();
-        expect($user->session_id)->not->toBeNull();
+        expect(UserSession::where('user_id', $user->id)->exists())->toBeTrue();
     });
 
     it('regenerates session on login', function () {
         $user = User::factory()->create([
             'email' => 'regen@example.com',
             'password' => bcrypt('Password123!'),
+        ]);
+
+        UserSession::create([
+            'user_id' => $user->id,
             'session_id' => 'old-session-id',
         ]);
 
@@ -192,7 +205,7 @@ describe('Auth - Session Management', function () {
             'password' => 'Password123!',
         ])->assertOk();
 
-        expect($user->fresh()->session_id)->not->toBe('old-session-id');
+        expect(UserSession::where('user_id', $user->id)->first()->session_id)->not->toBe('old-session-id');
     });
 
     it('returns user with roles on login', function () {
@@ -233,5 +246,116 @@ describe('Auth - Session Management', function () {
 
         $roles = collect($response->json('user.roles'));
         expect($roles->contains('name', 'author'))->toBeTrue();
+    });
+});
+
+describe('Auth - My Posts', function () {
+    it('returns paginated posts for the authenticated user', function () {
+        $user = User::factory()->create();
+        Post::factory()->count(3)->create(['author_id' => $user->id, 'status' => 'published']);
+        $this->actingAs($user);
+
+        $response = $this->getJson('/api/auth/my-posts')->assertOk();
+
+        expect($response->json('data'))->toHaveCount(3);
+        expect($response->json('meta.total'))->toBe(3);
+    });
+
+    it('includes draft posts not visible on public listing', function () {
+        $user = User::factory()->create();
+        Post::factory()->create(['author_id' => $user->id, 'status' => 'draft']);
+        Post::factory()->create(['author_id' => $user->id, 'status' => 'published']);
+        $this->actingAs($user);
+
+        $response = $this->getJson('/api/auth/my-posts')->assertOk();
+
+        expect($response->json('data'))->toHaveCount(2);
+    });
+
+    it('only returns the authenticated user posts', function () {
+        $user = User::factory()->create();
+        $other = User::factory()->create();
+        Post::factory()->create(['author_id' => $user->id, 'status' => 'published']);
+        Post::factory()->create(['author_id' => $other->id, 'status' => 'published']);
+        $this->actingAs($user);
+
+        $response = $this->getJson('/api/auth/my-posts')->assertOk();
+
+        expect($response->json('data'))->toHaveCount(1);
+    });
+
+    it('returns 401 when unauthenticated', function () {
+        $this->withExceptionHandling()->getJson('/api/auth/my-posts')->assertUnauthorized();
+    });
+
+    it('eager loads categories and tags', function () {
+        $user = User::factory()->create();
+        $post = Post::factory()->create(['author_id' => $user->id, 'status' => 'published']);
+        $category = Category::factory()->create();
+        $tag = Tag::factory()->create();
+        $post->categories()->attach($category);
+        $post->tags()->attach($tag);
+        $this->actingAs($user);
+
+        $response = $this->getJson('/api/auth/my-posts')->assertOk();
+
+        expect($response->json('data.0.categories'))->toHaveCount(1);
+        expect($response->json('data.0.tags'))->toHaveCount(1);
+    });
+});
+
+describe('Auth - My Post (single)', function () {
+    it('returns a single post by id for the authenticated user', function () {
+        $user = User::factory()->create();
+        $post = Post::factory()->create(['author_id' => $user->id, 'status' => 'draft']);
+        $this->actingAs($user);
+
+        $response = $this->getJson("/api/auth/my-posts/{$post->id}")
+            ->assertOk()
+            ->assertJsonPath('data.id', $post->id)
+            ->assertJsonPath('data.title', $post->title);
+    });
+
+    it('returns 403 when accessing another user post', function () {
+        $user = User::factory()->create();
+        $other = User::factory()->create();
+        $post = Post::factory()->create(['author_id' => $other->id]);
+        $this->actingAs($user);
+
+        $this->withExceptionHandling()->getJson("/api/auth/my-posts/{$post->id}")
+            ->assertForbidden();
+    });
+
+    it('allows admin to access any post', function () {
+        $admin = adminUser();
+        $other = User::factory()->create();
+        $post = Post::factory()->create(['author_id' => $other->id]);
+        $this->actingAs($admin);
+
+        $this->getJson("/api/auth/my-posts/{$post->id}")
+            ->assertOk()
+            ->assertJsonPath('data.id', $post->id);
+    });
+
+    it('eager loads categories and tags', function () {
+        $user = User::factory()->create();
+        $post = Post::factory()->create(['author_id' => $user->id]);
+        $category = Category::factory()->create();
+        $tag = Tag::factory()->create();
+        $post->categories()->attach($category);
+        $post->tags()->attach($tag);
+        $this->actingAs($user);
+
+        $response = $this->getJson("/api/auth/my-posts/{$post->id}")->assertOk();
+
+        expect($response->json('data.categories'))->toHaveCount(1);
+        expect($response->json('data.tags'))->toHaveCount(1);
+    });
+
+    it('returns 401 when unauthenticated', function () {
+        $post = Post::factory()->create();
+
+        $this->withExceptionHandling()->getJson("/api/auth/my-posts/{$post->id}")
+            ->assertUnauthorized();
     });
 });

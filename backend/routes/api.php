@@ -26,6 +26,8 @@ Route::post('/auth/register', [AuthController::class, 'register'])->middleware('
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('web');
 Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware(['web', 'auth']);
 Route::get('/auth/me', [AuthController::class, 'me'])->middleware(['web', 'auth']);
+Route::get('/auth/my-posts', [AuthController::class, 'myPosts'])->middleware(['web', 'auth']);
+Route::get('/auth/my-posts/{post}', [AuthController::class, 'myPost'])->middleware(['web', 'auth']);
 
 // Authenticated routes
 Route::middleware(['web', 'auth', 'single.session'])->group(function () {
@@ -37,6 +39,20 @@ Route::middleware(['web', 'auth', 'single.session'])->group(function () {
     // Comments
     Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+
+    // Comment moderation (admin)
+    Route::get('/comments', [CommentController::class, 'index']);
+    Route::put('/comments/{comment}', [CommentController::class, 'update']);
+
+    // Category CRUD (admin)
+    Route::post('/categories', [CategoryController::class, 'store']);
+    Route::put('/categories/{category}', [CategoryController::class, 'update']);
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
+
+    // Tag CRUD (admin)
+    Route::post('/tags', [TagController::class, 'store']);
+    Route::put('/tags/{tag}', [TagController::class, 'update']);
+    Route::delete('/tags/{tag}', [TagController::class, 'destroy']);
 
     // Profile
     Route::put('/profile', [ProfileController::class, 'update']);

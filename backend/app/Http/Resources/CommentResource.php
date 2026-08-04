@@ -16,6 +16,11 @@ class CommentResource extends JsonResource
             'is_approved' => $this->is_approved,
             'created_at' => $this->created_at?->toISOString(),
             'user' => UserResource::make($this->whenLoaded('user')),
+            'post' => $this->whenLoaded('post', fn () => [
+                'id' => $this->post->id,
+                'title' => $this->post->title,
+                'slug' => $this->post->slug,
+            ]),
             'replies' => CommentResource::collection($this->whenLoaded('replies')),
         ];
     }

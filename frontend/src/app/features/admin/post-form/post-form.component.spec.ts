@@ -6,7 +6,7 @@ import { PostFormComponent } from './post-form.component';
 import { BlogService } from '../../../core/services/blog.service';
 import { API_URL } from '../../../core/tokens/api-url.token';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Post, Category, Tag, Paginated } from '../../../core/models';
+import { Post, Category, Tag } from '../../../core/models';
 
 describe('PostFormComponent', () => {
   let component: PostFormComponent;
@@ -32,12 +32,6 @@ describe('PostFormComponent', () => {
     updated_at: '2026-01-01T00:00:00Z',
     categories: [{ id: 1, name: 'Tech', slug: 'tech', description: null }],
     tags: [{ id: 2, name: 'angular', slug: 'angular' }],
-  };
-
-  const mockPaginated: Paginated<Post> = {
-    data: [mockPost],
-    current_page: 1, last_page: 1, per_page: 10, total: 1,
-    from: 1, to: 1, prev_page_url: null, next_page_url: null,
   };
 
   beforeEach(async () => {
@@ -93,7 +87,7 @@ describe('PostFormComponent', () => {
       component.ngOnInit();
       httpMock.expectOne('/api/categories').flush({ data: mockCategories });
       httpMock.expectOne('/api/tags').flush({ data: mockTags });
-      httpMock.expectOne('/api/posts?page=1').flush(mockPaginated);
+      httpMock.expectOne('/api/auth/my-posts/5').flush({ data: mockPost });
       fixture.detectChanges();
     });
 
@@ -102,10 +96,11 @@ describe('PostFormComponent', () => {
       expect(component.postId()).toBe(5);
     });
 
-    it('should load post data', () => {
+    it('should load post data including featured_image', () => {
       expect(component.title()).toBe('Existing Post');
       expect(component.excerpt()).toBe('Excerpt');
       expect(component.content()).toBe('Content');
+      expect(component.featuredImage()).toBe('');
       expect(component.status()).toBe('published');
       expect(component.publishedAt()).toBe('2026-01-01T00:00:00Z');
       expect(component.selectedCategories()).toEqual([1]);
@@ -157,6 +152,7 @@ describe('PostFormComponent', () => {
         title: 'New Post',
         excerpt: '',
         content: 'Content body',
+        featured_image: null,
         status: 'draft',
         published_at: null,
         categories: [1],
@@ -197,7 +193,7 @@ describe('PostFormComponent', () => {
       component.ngOnInit();
       httpMock.expectOne('/api/categories').flush({ data: mockCategories });
       httpMock.expectOne('/api/tags').flush({ data: mockTags });
-      httpMock.expectOne('/api/posts?page=1').flush(mockPaginated);
+      httpMock.expectOne('/api/auth/my-posts/5').flush({ data: mockPost });
       fixture.detectChanges();
     });
 

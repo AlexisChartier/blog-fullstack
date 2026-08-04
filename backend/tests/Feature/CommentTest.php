@@ -103,3 +103,82 @@ describe('Comments API', function () {
             ->assertForbidden();
     });
 });
+
+describe('Comment Moderation (admin)', function () {
+    it('lists all comments for admin', function () {
+        $admin = adminUser();
+        Comment::factory(3)->create();
+        $this->actingAs($admin);
+
+        $response = $this->getJson('/api/comments')
+            ->assertOk();
+
+        expect($response->json('data'))->toHaveCount(3);
+    });
+
+    it('includes user and post relations', function () {
+        $admin = adminUser();
+        $comment = Comment::factory()->create();
+        $this->actingAs($admin);
+
+        $response = $this->getJson('/api/comments')->assertOk();
+
+        expect($response->json('data.0.user'))->not->toBeNull();
+        expect($response->json('data.0.post'))->not->toBeNull();
+    });
+
+    it('prevents non-admin from listing comments', function () {
+        $this->actingAs(authorUser());
+
+        $this->withExceptionHandling()->getJson('/api/comments')
+            ->assertForbidden();
+    });
+
+    it('prevents unauthenticated from listing comments', function () {
+        $this->withExceptionHandling()->getJson('/api/comments')
+            ->assertUnauthorized();
+    });
+
+    it('allows admin to approve a comment', function () {
+        $admin = adminUser();
+        $comment = Comment::factory()->create(['is_approved' => false]);
+        $this->actingAs($admin);
+
+        $this->putJson("/api/comments/{$comment->id}", [
+            'is_approved' => true,
+        ])
+            ->assertOk()
+            ->assertJsonPath('comment.is_approved', true);
+    });
+
+    it('allows admin to unapprove a comment', function () {
+        $admin = adminUser();
+        $comment = Comment::factory()->create(['is_approved' => true]);
+        $this->actingAs($admin);
+
+        $this->putJson("/api/comments/{$comment->id}", [
+            'is_approved' => false,
+        ])
+            ->assertOk()
+            ->assertJsonPath('comment.is_approved', false);
+    });
+
+    it('prevents non-admin from moderating comments', function () {
+        $comment = Comment::factory()->create(['is_approved' => false]);
+        $this->actingAs(authorUser());
+
+        $this->withExceptionHandling()->putJson("/api/comments/{$comment->id}", [
+            'is_approved' => true,
+        ])->assertForbidden();
+    });
+
+    it('validates is_approved is required', function () {
+        $admin = adminUser();
+        $comment = Comment::factory()->create();
+        $this->actingAs($admin);
+
+        $this->withExceptionHandling()->putJson("/api/comments/{$comment->id}", [])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['is_approved']);
+    });
+});
