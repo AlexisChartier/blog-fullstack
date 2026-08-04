@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\CreatePost;
+use App\Actions\UpdatePost;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\IndexPostRequest;
 use App\Http\Requests\Api\StorePostRequest;
 use App\Http\Requests\Api\UpdatePostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class PostController extends Controller
 {
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(IndexPostRequest $request): AnonymousResourceCollection
     {
         $posts = Post::published()
             ->with(['author:id,name,username,avatar_url', 'categories:id,name,slug', 'tags:id,name,slug'])
@@ -45,40 +47,25 @@ class PostController extends Controller
         return new PostResource($post);
     }
 
-    public function store(StorePostRequest $request): JsonResponse
+    public function store(StorePostRequest $request, CreatePost $action): JsonResponse
     {
-        /** @var Post $post */
-        $post = $request->user()->posts()->create($request->except(['categories', 'tags']));
-
-        if ($categories = $request->input('categories')) {
-            $post->categories()->sync($categories);
-        }
-        if ($tags = $request->input('tags')) {
-            $post->tags()->sync($tags);
-        }
+        $post = $action->execute($request);
 
         return response()->json([
             'message' => 'Post created',
-            'post' => new PostResource($post->load(['author', 'categories', 'tags'])),
+            'post' => new PostResource($post),
         ], 201);
     }
 
-    public function update(UpdatePostRequest $request, Post $post): JsonResponse
+    public function update(UpdatePostRequest $request, Post $post, UpdatePost $action): JsonResponse
     {
         $this->authorize('update', $post);
 
-        $post->update($request->except(['categories', 'tags']));
-
-        if ($request->has('categories')) {
-            $post->categories()->sync($request->input('categories'));
-        }
-        if ($request->has('tags')) {
-            $post->tags()->sync($request->input('tags'));
-        }
+        $post = $action->execute($post, $request);
 
         return response()->json([
             'message' => 'Post updated',
-            'post' => new PostResource($post->load(['author', 'categories', 'tags'])),
+            'post' => new PostResource($post),
         ]);
     }
 

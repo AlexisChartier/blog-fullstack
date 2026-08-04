@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UserPostController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,7 +19,7 @@ Route::get('/posts/{slug}', [PostController::class, 'show'])->where('slug', '[a-
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/tags', [TagController::class, 'index']);
 Route::get('/users/{username}', [UserController::class, 'show'])->where('username', '[a-zA-Z0-9_]+');
-Route::get('/users/{username}/posts', [UserController::class, 'posts'])->where('username', '[a-zA-Z0-9_]+');
+Route::get('/users/{username}/posts', [UserPostController::class, 'index'])->where('username', '[a-zA-Z0-9_]+');
 
 // Auth routes
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('web');

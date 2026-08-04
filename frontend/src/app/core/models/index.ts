@@ -45,6 +45,7 @@ export interface Tag {
 export interface Comment {
   id: number;
   content: string;
+  parent_id: number | null;
   is_approved: boolean;
   created_at: string;
   user: User;

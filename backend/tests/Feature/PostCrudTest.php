@@ -135,6 +135,19 @@ describe('Posts - CRUD (authenticated)', function () {
         expect($post->fresh()->categories)->toHaveCount(2);
     });
 
+    it('syncs tags on update', function () {
+        $author = authorUser();
+        $post = Post::factory()->create(['author_id' => $author->id]);
+        $tags = Tag::factory(2)->create();
+        $this->actingAs($author);
+
+        $this->putJson("/api/posts/{$post->id}", [
+            'tags' => $tags->pluck('id')->toArray(),
+        ])->assertOk();
+
+        expect($post->fresh()->tags)->toHaveCount(2);
+    });
+
     it('allows author to delete own post', function () {
         $author = authorUser();
         $post = Post::factory()->create(['author_id' => $author->id]);

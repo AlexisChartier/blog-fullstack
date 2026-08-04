@@ -39,7 +39,7 @@ describe('BlogService', () => {
     created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
   };
 
-  const mockComment = { id: 10, content: 'Great post!', is_approved: true, created_at: '2026-01-01T00:00:00Z', user: { id: 1, name: 'Jane', username: 'jane', avatar_url: null, bio: null, created_at: '2026-01-01T00:00:00Z' } };
+  const mockComment = { id: 10, content: 'Great post!', parent_id: null, is_approved: true, created_at: '2026-01-01T00:00:00Z', user: { id: 1, name: 'Jane', username: 'jane', avatar_url: null, bio: null, created_at: '2026-01-01T00:00:00Z' } };
 
   beforeEach(() => {
     TestBed.configureTestingModule({

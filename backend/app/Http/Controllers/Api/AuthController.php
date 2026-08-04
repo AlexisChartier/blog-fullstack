@@ -2,24 +2,20 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\LoginUser;
+use App\Actions\LogoutUser;
+use App\Actions\RegisterUser;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function register(RegisterRequest $request): JsonResponse
+    public function register(RegisterRequest $request, RegisterUser $action): JsonResponse
     {
-        $user = User::create($request->validated());
-        $user->assignRole('reader');
-
-        Auth::login($user);
-        $request->session()->regenerate();
-        $user->forceFill(['session_id' => $request->session()->getId()])->save();
+        $user = $action->execute($request->validated(), $request);
 
         return response()->json([
             'message' => 'Registration successful',
@@ -27,29 +23,25 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request, LoginUser $action): JsonResponse
     {
-        if (! Auth::attempt($request->only('email', 'password'))) {
+        $user = $action->execute($request->only('email', 'password'), $request);
+
+        if ($user === null) {
             return response()->json([
                 'message' => 'Invalid credentials',
             ], 401);
         }
 
-        $request->session()->regenerate();
-        $request->user()->forceFill(['session_id' => $request->session()->getId()])->save();
-
         return response()->json([
             'message' => 'Login successful',
-            'user' => $request->user()->load('roles'),
+            'user' => $user->load('roles'),
         ]);
     }
 
-    public function logout(Request $request): JsonResponse
+    public function logout(Request $request, LogoutUser $action): JsonResponse
     {
-        $request->user()->forceFill(['session_id' => null])->save();
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $action->execute($request);
 
         return response()->json(['message' => 'Logged out']);
     }

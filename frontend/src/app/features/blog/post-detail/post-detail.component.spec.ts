@@ -20,7 +20,7 @@ describe('PostDetailComponent', () => {
   let isAuthenticatedSignal: WritableSignal<boolean>;
 
   const mockComment: Comment = {
-    id: 1, content: 'Great post!', is_approved: true, created_at: '2026-01-01T00:00:00Z',
+    id: 1, content: 'Great post!', parent_id: null, is_approved: true, created_at: '2026-01-01T00:00:00Z',
     user: { id: 2, name: 'Commenter', username: 'commenter', avatar_url: null, bio: null, created_at: '' },
   };
 
