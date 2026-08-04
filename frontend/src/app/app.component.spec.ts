@@ -58,13 +58,70 @@ describe('AppComponent', () => {
   describe('dark mode', () => {
     it('should toggle dark mode on', () => {
       component.toggleDarkMode();
+      fixture.detectChanges();
       expect(component.darkMode()).toBe(true);
     });
 
     it('should toggle dark mode off', () => {
       component.darkMode.set(true);
       component.toggleDarkMode();
+      fixture.detectChanges();
       expect(component.darkMode()).toBe(false);
+    });
+
+    it('should initialize dark mode from localStorage when stored as true', () => {
+      localStorage.setItem('darkMode', 'true');
+      document.documentElement.classList.remove('dark');
+
+      const f = TestBed.createComponent(AppComponent);
+      f.detectChanges();
+
+      expect(f.componentInstance.darkMode()).toBe(true);
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
+    });
+
+    it('should initialize dark mode from prefers-color-scheme when no localStorage value', () => {
+      localStorage.removeItem('darkMode');
+      (window.matchMedia as jasmine.Spy).and.returnValue({ matches: true } as any);
+      document.documentElement.classList.remove('dark');
+
+      const f = TestBed.createComponent(AppComponent);
+      f.detectChanges();
+
+      expect(f.componentInstance.darkMode()).toBe(true);
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
+    });
+
+    it('should not enable dark mode when localStorage is false and no prefers-color-scheme match', () => {
+      localStorage.setItem('darkMode', 'false');
+      (window.matchMedia as jasmine.Spy).and.returnValue({ matches: false } as any);
+
+      const f = TestBed.createComponent(AppComponent);
+      f.detectChanges();
+
+      expect(f.componentInstance.darkMode()).toBe(false);
+      expect(document.documentElement.classList.contains('dark')).toBe(false);
+    });
+
+    it('should remove dark class from document when dark mode is toggled off', () => {
+      component.darkMode.set(true);
+      document.documentElement.classList.add('dark');
+
+      component.toggleDarkMode();
+      fixture.detectChanges();
+
+      expect(component.darkMode()).toBe(false);
+      expect(document.documentElement.classList.contains('dark')).toBe(false);
+    });
+
+    it('should add dark class to document when dark mode is toggled on', () => {
+      document.documentElement.classList.remove('dark');
+
+      component.toggleDarkMode();
+      fixture.detectChanges();
+
+      expect(component.darkMode()).toBe(true);
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
     });
   });
 

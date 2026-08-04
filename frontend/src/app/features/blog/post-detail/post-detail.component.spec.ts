@@ -103,6 +103,20 @@ describe('PostDetailComponent', () => {
       expect(f.componentInstance.loading()).toBe(true);
       expect(f.componentInstance.post()).toBeNull();
     });
+
+    it('should use post title for meta description when excerpt is null in route data', () => {
+      const postNoExcerpt = { ...mockPost, excerpt: null, title: 'No Excerpt Here' };
+      const route = TestBed.inject(ActivatedRoute);
+      (route.data as any) = { subscribe: (cb: (d: Data) => void) => cb({ post: postNoExcerpt } as Data) };
+
+      const f = TestBed.createComponent(PostDetailComponent);
+      f.detectChanges();
+
+      expect(f.componentInstance.post()?.title).toBe('No Excerpt Here');
+      const metaService = TestBed.inject(Meta);
+      const descTag = metaService.getTag('name="description"');
+      expect(descTag?.getAttribute('content')).toBe('No Excerpt Here');
+    });
   });
 
   describe('loadPost', () => {

@@ -202,6 +202,18 @@ describe('AuthService', () => {
       expect(service.loading()).toBe(false);
       expect(service.isAuthenticated()).toBe(false);
     }));
+
+    it('should set loading false if CSRF cookie fetch fails during register', fakeAsync(() => {
+      service.register('Jane', 'jane_doe', 'jane@example.com', 'Password123!');
+
+      const csrfReq = httpMock.expectOne('/sanctum/csrf-cookie');
+      csrfReq.flush({}, { status: 500, statusText: 'Server Error' });
+
+      tick();
+
+      expect(service.loading()).toBe(false);
+      httpMock.expectNone('/api/auth/register');
+    }));
   });
 
   describe('logout', () => {

@@ -140,4 +140,98 @@ describe('Auth - Logout', function () {
         $this->withExceptionHandling()->postJson('/api/auth/logout')
             ->assertUnauthorized();
     });
+
+    it('clears session_id on logout', function () {
+        $user = User::factory()->create(['session_id' => 'some-session']);
+        $this->actingAs($user);
+
+        $this->withExceptionHandling()->postJson('/api/auth/logout')
+            ->assertOk();
+
+        expect($user->fresh()->session_id)->toBeNull();
+    });
+});
+
+describe('Auth - Session Management', function () {
+    it('stores session_id on login', function () {
+        $user = User::factory()->create([
+            'email' => 'session@example.com',
+            'password' => bcrypt('Password123!'),
+        ]);
+
+        $this->withExceptionHandling()->postJson('/api/auth/login', [
+            'email' => 'session@example.com',
+            'password' => 'Password123!',
+        ])->assertOk();
+
+        expect($user->fresh()->session_id)->not->toBeNull();
+    });
+
+    it('stores session_id on register', function () {
+        $this->withExceptionHandling()->postJson('/api/auth/register', [
+            'name' => 'Session User',
+            'username' => 'sessionuser',
+            'email' => 'sessionuser@example.com',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+        ])->assertCreated();
+
+        $user = User::where('email', 'sessionuser@example.com')->first();
+        expect($user->session_id)->not->toBeNull();
+    });
+
+    it('regenerates session on login', function () {
+        $user = User::factory()->create([
+            'email' => 'regen@example.com',
+            'password' => bcrypt('Password123!'),
+            'session_id' => 'old-session-id',
+        ]);
+
+        $this->withExceptionHandling()->postJson('/api/auth/login', [
+            'email' => 'regen@example.com',
+            'password' => 'Password123!',
+        ])->assertOk();
+
+        expect($user->fresh()->session_id)->not->toBe('old-session-id');
+    });
+
+    it('returns user with roles on login', function () {
+        $user = User::factory()->create([
+            'email' => 'roles@example.com',
+            'password' => bcrypt('Password123!'),
+        ]);
+        $user->assignRole('reader');
+
+        $response = $this->withExceptionHandling()->postJson('/api/auth/login', [
+            'email' => 'roles@example.com',
+            'password' => 'Password123!',
+        ])->assertOk();
+
+        $roles = collect($response->json('user.roles'));
+        expect($roles->contains('name', 'reader'))->toBeTrue();
+    });
+
+    it('returns user with roles on register', function () {
+        $response = $this->withExceptionHandling()->postJson('/api/auth/register', [
+            'name' => 'Role User',
+            'username' => 'roleuser',
+            'email' => 'roleuser@example.com',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+        ])->assertCreated();
+
+        $roles = collect($response->json('user.roles'));
+        expect($roles->contains('name', 'reader'))->toBeTrue();
+    });
+
+    it('returns user with roles on me endpoint', function () {
+        $user = User::factory()->create();
+        $user->assignRole('author');
+        $this->actingAs($user);
+
+        $response = $this->getJson('/api/auth/me')->assertOk();
+
+        $roles = collect($response->json('user.roles'));
+        expect($roles->contains('name', 'author'))->toBeTrue();
+    });
 });
