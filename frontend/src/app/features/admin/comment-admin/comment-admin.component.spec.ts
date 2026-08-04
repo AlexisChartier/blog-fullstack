@@ -114,6 +114,7 @@ describe('CommentAdminComponent', () => {
     it('should not delete when confirm is cancelled', () => {
       spyOn(window, 'confirm').and.returnValue(false);
       component.deleteComment(1);
+      expect(component.comments()).toHaveSize(2);
       httpMock.expectNone('/api/comments/1');
     });
 
@@ -152,6 +153,7 @@ describe('CommentAdminComponent', () => {
       component.currentPage.set(3);
       component.lastPage.set(3);
       component.nextPage();
+      expect(component.currentPage()).toBe(3);
       httpMock.expectNone('/api/comments?page=4');
     });
 
@@ -171,6 +173,7 @@ describe('CommentAdminComponent', () => {
     it('should not go before page 1', () => {
       component.currentPage.set(1);
       component.prevPage();
+      expect(component.currentPage()).toBe(1);
       httpMock.expectNone('/api/comments?page=0');
     });
   });

@@ -18,8 +18,7 @@
           <img *ngIf="avatarUrl() && !avatarUrl()?.startsWith('data:')"
                [src]="'/storage/' + avatarUrl()"
                [alt]="name()"
-               class="w-full h-full object-cover"
-               onerror="this.style.display='none'" />
+               class="w-full h-full object-cover" />
           <img *ngIf="avatarUrl()?.startsWith('data:')"
                [src]="avatarUrl()"
                [alt]="name()"

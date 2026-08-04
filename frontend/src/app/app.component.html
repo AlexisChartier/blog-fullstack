@@ -35,7 +35,7 @@
               <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </button>
 
-            <div *ngIf="profileOpen()" (click)="closeMenus()" (keydown.escape)="closeMenus()" tabindex="-1" role="button" aria-label="Close menu" class="fixed inset-0 z-40"></div>
+            <button *ngIf="profileOpen()" (click)="closeMenus()" tabindex="-1" aria-label="Close menu" class="fixed inset-0 z-40 bg-transparent border-0 cursor-default"></button>
             <div *ngIf="profileOpen()" class="absolute right-0 mt-2 w-60 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 py-2 z-50 animate-fade-in overflow-hidden">
               <div class="px-4 py-2.5 border-b border-gray-100 dark:border-gray-800">
                 <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ user()?.name }}</p>

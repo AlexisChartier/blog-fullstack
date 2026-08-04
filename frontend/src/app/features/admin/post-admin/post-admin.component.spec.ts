@@ -88,10 +88,13 @@ describe('PostAdminComponent', () => {
       const req = httpMock.expectOne('/api/auth/my-posts?page=2');
       req.flush({ ...mockPaginated, data: [], current_page: 2 });
       tick();
+
+      expect(component.currentPage()).toBe(2);
     }));
 
     it('should not go before page 1', () => {
       component.prevPage();
+      expect(component.currentPage()).toBe(1);
       httpMock.expectNone('/api/auth/my-posts?page=0');
     });
   });

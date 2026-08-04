@@ -16,10 +16,10 @@
   <!-- Page title with filter badge -->
   <div class="flex items-center gap-3 flex-wrap">
     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{{ pageTitle() }}</h1>
-    <span *ngIf="hasFilter" (click)="clearFilters()" (keydown.enter)="clearFilters()" (keydown.space)="clearFilters()" tabindex="0" role="button" class="badge-gray cursor-pointer hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-300 transition-colors">
+    <button *ngIf="hasFilter" (click)="clearFilters()" class="badge-gray cursor-pointer hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-300 transition-colors border-0 bg-transparent p-0 inline-flex items-center">
       Clear filter
       <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-    </span>
+    </button>
     <span class="text-sm text-gray-500 dark:text-gray-400">{{ total() }} article{{ total() !== 1 ? 's' : '' }}</span>
   </div>
 
@@ -49,7 +49,7 @@
       </div>
 
       <!-- Post cards -->
-      <article *ngFor="let post of posts()" class="card-hover p-5 sm:p-6 animate-fade-in cursor-pointer group" tabindex="0" role="link" (click)="router.navigate(['/post', post.slug])" (keydown.enter)="router.navigate(['/post', post.slug])">
+      <a *ngFor="let post of posts()" [routerLink]="['/post', post.slug]" class="card-hover p-5 sm:p-6 animate-fade-in cursor-pointer group no-underline block">
         <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mb-3">
           <div class="w-8 h-8 bg-gradient-to-br from-primary-400 to-accent-400 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
             {{ post.author?.name?.charAt(0) || 'A' }}
@@ -66,14 +66,14 @@
         <p class="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">{{ post.excerpt }}</p>
 
         <div class="flex flex-wrap items-center gap-2">
-          <a *ngFor="let cat of post.categories" [routerLink]="['/category', cat.slug]" (click)="$event.stopPropagation()" class="badge-primary no-underline hover:bg-primary-200 dark:hover:bg-primary-800/50 transition-colors">
+          <span *ngFor="let cat of post.categories" class="badge-primary">
             {{ cat.name }}
-          </a>
-          <a *ngFor="let tag of post.tags" [routerLink]="['/tag', tag.slug]" (click)="$event.stopPropagation()" class="badge-gray no-underline hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+          </span>
+          <span *ngFor="let tag of post.tags" class="badge-gray">
             <span class="text-gray-400">#</span>{{ tag.name }}
-          </a>
+          </span>
         </div>
-      </article>
+      </a>
 
       <!-- Pagination -->
       <div *ngIf="lastPage() > 1" class="flex items-center justify-center gap-2 pt-4 flex-wrap">

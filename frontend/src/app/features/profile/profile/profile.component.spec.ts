@@ -12,7 +12,7 @@ describe('ProfileComponent', () => {
   let component: ProfileComponent;
   let fixture: ComponentFixture<ProfileComponent>;
   let httpMock: HttpTestingController;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let router: Router;
 
   const mockUser: User = {
     id: 1, name: 'Jane Doe', username: 'jane_doe', avatar_url: null, bio: 'Developer',
@@ -27,8 +27,6 @@ describe('ProfileComponent', () => {
   const mockUserWithPosts: User = { ...mockUser, posts: mockPosts };
 
   beforeEach(async () => {
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-
     await TestBed.configureTestingModule({
       imports: [ProfileComponent, RouterTestingModule],
       providers: [
@@ -36,7 +34,6 @@ describe('ProfileComponent', () => {
         provideHttpClientTesting(),
         UserService,
         { provide: API_URL, useValue: '/api' },
-        { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -45,6 +42,9 @@ describe('ProfileComponent', () => {
         },
       ],
     }).compileComponents();
+
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
 
     fixture = TestBed.createComponent(ProfileComponent);
     component = fixture.componentInstance;

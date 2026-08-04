@@ -142,6 +142,7 @@ describe('TagAdminComponent', () => {
     it('should not delete when confirm is cancelled', () => {
       spyOn(window, 'confirm').and.returnValue(false);
       component.deleteTag(1);
+      expect(component.tags()).toHaveSize(2);
       httpMock.expectNone('/api/tags/1');
     });
 

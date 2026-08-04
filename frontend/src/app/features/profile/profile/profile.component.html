@@ -48,7 +48,7 @@
   <div>
     <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Recent Posts</h2>
     <div class="space-y-4">
-      <article *ngFor="let post of posts()" class="card-hover p-5 cursor-pointer" tabindex="0" role="link" (click)="router.navigate(['/post', post.slug])" (keydown.enter)="router.navigate(['/post', post.slug])">
+      <a *ngFor="let post of posts()" [routerLink]="['/post', post.slug]" class="card-hover p-5 cursor-pointer no-underline block">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ post.title }}</h3>
         <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mt-2 flex-wrap">
           <span class="whitespace-nowrap">{{ post.published_at | date: 'MMM d, y' }}</span>
@@ -56,7 +56,7 @@
           <span *ngFor="let cat of post.categories" class="text-primary-600 dark:text-primary-400">{{ cat.name }}</span>
         </div>
         <p class="text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">{{ post.excerpt }}</p>
-      </article>
+      </a>
       <div *ngIf="posts().length === 0" class="text-center py-12">
         <p class="text-gray-400 dark:text-gray-600">No posts yet.</p>
       </div>

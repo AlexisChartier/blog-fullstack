@@ -166,6 +166,7 @@ describe('CategoryAdminComponent', () => {
     it('should not delete when confirm is cancelled', () => {
       spyOn(window, 'confirm').and.returnValue(false);
       component.deleteCategory(1);
+      expect(component.categories()).toHaveSize(2);
       httpMock.expectNone('/api/categories/1');
     });
 

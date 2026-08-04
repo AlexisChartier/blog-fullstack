@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Models\Category;
 use App\Models\User;
 
 class CategoryPolicy
@@ -12,12 +11,12 @@ class CategoryPolicy
         return $user->isAdmin();
     }
 
-    public function update(User $user, Category $category): bool
+    public function update(User $user): bool
     {
         return $user->isAdmin();
     }
 
-    public function delete(User $user, Category $category): bool
+    public function delete(User $user): bool
     {
         return $user->isAdmin();
     }
