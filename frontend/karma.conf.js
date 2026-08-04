@@ -27,7 +27,13 @@ module.exports = function (config) {
       exclude: ['src/app/**/*.spec.ts'],
     },
     reporters: ['progress', 'kjhtml'],
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadlessNoSandbox'],
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--disable-gpu'],
+      },
+    },
     restartOnFileChange: true,
   });
 };
