@@ -284,41 +284,46 @@ describe('PostDetailComponent', () => {
   });
 
   describe('sharePost', () => {
+    let originalShare: any;
+
+    beforeEach(() => {
+      originalShare = (navigator as any).share;
+      (navigator as any).share = jasmine.createSpy('share').and.returnValue(Promise.resolve());
+    });
+
+    afterEach(() => {
+      (navigator as any).share = originalShare;
+    });
+
     it('should use navigator.share if available', () => {
       component.post.set(mockPost);
-      const shareSpy = spyOn(navigator, 'share').and.returnValue(Promise.resolve() as any);
       component.sharePost();
-      expect(shareSpy).toHaveBeenCalledWith({ title: 'Test Post', url: window.location.href });
+      expect((navigator as any).share).toHaveBeenCalledWith({ title: 'Test Post', url: window.location.href });
     });
 
     it('should fallback to clipboard when share not available', () => {
-      component.post.set(mockPost);
-      const origShare = navigator.share;
       (navigator as any).share = undefined;
+      component.post.set(mockPost);
       const clipboardSpy = spyOn(navigator.clipboard, 'writeText').and.returnValue(Promise.resolve() as any);
       component.sharePost();
       expect(clipboardSpy).toHaveBeenCalled();
       expect(component.copied()).toBe(true);
-      (navigator as any).share = origShare;
     });
 
     it('should reset copied signal after 2 seconds', fakeAsync(() => {
-      component.post.set(mockPost);
-      const origShare = navigator.share;
       (navigator as any).share = undefined;
+      component.post.set(mockPost);
       spyOn(navigator.clipboard, 'writeText').and.returnValue(Promise.resolve() as any);
       component.sharePost();
       expect(component.copied()).toBe(true);
       tick(2000);
       expect(component.copied()).toBe(false);
-      (navigator as any).share = origShare;
     }));
 
     it('should not share when post is null', () => {
       component.post.set(null);
-      const shareSpy = spyOn(navigator, 'share').and.returnValue(Promise.resolve() as any);
       component.sharePost();
-      expect(shareSpy).toHaveBeenCalledWith({ title: undefined, url: window.location.href });
+      expect((navigator as any).share).toHaveBeenCalledWith({ title: undefined, url: window.location.href });
     });
   });
 
