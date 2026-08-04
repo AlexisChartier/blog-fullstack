@@ -12,11 +12,14 @@ describe('LoginComponent', () => {
   let fixture: ComponentFixture<LoginComponent>;
   let authSpy: jasmine.SpyObj<AuthService>;
   let loadingSignal: WritableSignal<boolean>;
+  let errorSignal: WritableSignal<string | null>;
 
   beforeEach(async () => {
     loadingSignal = signal(false);
+    errorSignal = signal(null);
     authSpy = jasmine.createSpyObj('AuthService', ['login'], {
       loading: loadingSignal.asReadonly(),
+      error: errorSignal.asReadonly(),
     });
 
     await TestBed.configureTestingModule({
@@ -41,7 +44,7 @@ describe('LoginComponent', () => {
   });
 
   it('should start with no error', () => {
-    expect(component.error()).toBe('');
+    expect(component.error).toBe('');
   });
 
   it('should expose loading signal from auth service', () => {
@@ -53,7 +56,7 @@ describe('LoginComponent', () => {
       component.email.set('');
       component.password.set('password');
       component.submit();
-      expect(component.error()).toBe('Please fill in all fields.');
+      expect(component.error).toBe('Please fill in all fields.');
       expect(authSpy.login).not.toHaveBeenCalled();
     });
 
@@ -61,7 +64,7 @@ describe('LoginComponent', () => {
       component.email.set('test@example.com');
       component.password.set('');
       component.submit();
-      expect(component.error()).toBe('Please fill in all fields.');
+      expect(component.error).toBe('Please fill in all fields.');
       expect(authSpy.login).not.toHaveBeenCalled();
     });
 
@@ -69,20 +72,20 @@ describe('LoginComponent', () => {
       component.email.set('');
       component.password.set('');
       component.submit();
-      expect(component.error()).toBe('Please fill in all fields.');
+      expect(component.error).toBe('Please fill in all fields.');
       expect(authSpy.login).not.toHaveBeenCalled();
     });
 
-    it('should clear previous error on submit', () => {
-      component.error.set('Previous error');
+    it('should clear previous local error on submit', () => {
+      component.localError.set('Previous error');
       component.email.set('test@example.com');
       component.password.set('password');
       component.submit();
-      expect(component.error()).toBe('');
+      expect(component.localError()).toBe('');
     });
 
-    it('should call auth.login with email and password when fields are filled', () => {
-      component.email.set('test@example.com');
+    it('should call auth.login with trimmed email and password when fields are filled', () => {
+      component.email.set('  test@example.com  ');
       component.password.set('Password123!');
       component.submit();
       expect(authSpy.login).toHaveBeenCalledWith('test@example.com', 'Password123!');
@@ -110,15 +113,23 @@ describe('LoginComponent', () => {
       expect(el.querySelector('button[type="submit"]')).toBeTruthy();
     });
 
-    it('should display error message when error signal is set', () => {
-      component.error.set('Invalid credentials');
+    it('should display error message when localError is set', () => {
+      component.localError.set('Invalid credentials');
       fixture.detectChanges();
       const el: HTMLElement = fixture.nativeElement;
       expect(el.textContent).toContain('Invalid credentials');
     });
 
+    it('should display server error when auth error is set', () => {
+      errorSignal.set('Server error');
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Server error');
+    });
+
     it('should not display error message when error is empty', () => {
-      component.error.set('');
+      component.localError.set('');
+      errorSignal.set(null);
       fixture.detectChanges();
       const el: HTMLElement = fixture.nativeElement;
       const errorBanner = el.querySelector('.bg-red-50');

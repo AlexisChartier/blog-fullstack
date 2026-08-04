@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { of, Observable } from 'rxjs';
@@ -13,17 +13,24 @@ export class AuthService {
 
   private _user = signal<User | null>(null);
   private _loading = signal(false);
+  private _error = signal<string | null>(null);
+  private _sessionChecked = signal(false);
 
   readonly user = this._user.asReadonly();
   readonly loading = this._loading.asReadonly();
+  readonly error = this._error.asReadonly();
   readonly isAuthenticated = signal(false);
+  readonly sessionChecked = this._sessionChecked.asReadonly();
 
   constructor() {
     this.restoreSession();
   }
 
   private restoreSession() {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      this._sessionChecked.set(true);
+      return;
+    }
     this.fetchUser();
   }
 
@@ -34,6 +41,7 @@ export class AuthService {
 
   login(email: string, password: string) {
     this._loading.set(true);
+    this._error.set(null);
     this.ensureCsrfCookie().subscribe({
       next: () => {
         this.http.post<{ message: string; user: User }>(`${this.apiUrl}/auth/login`, { email, password })
@@ -44,15 +52,22 @@ export class AuthService {
               this._loading.set(false);
               this.router.navigate(['/']);
             },
-            error: () => this._loading.set(false),
+            error: (err: HttpErrorResponse) => {
+              this._loading.set(false);
+              this._error.set(this.parseError(err));
+            },
           });
       },
-      error: () => this._loading.set(false),
+      error: () => {
+        this._loading.set(false);
+        this._error.set('Could not connect to the server.');
+      },
     });
   }
 
   register(name: string, username: string, email: string, password: string) {
     this._loading.set(true);
+    this._error.set(null);
     this.ensureCsrfCookie().subscribe({
       next: () => {
         this.http.post<{ message: string; user: User }>(`${this.apiUrl}/auth/register`, {
@@ -64,10 +79,16 @@ export class AuthService {
             this._loading.set(false);
             this.router.navigate(['/']);
           },
-          error: () => this._loading.set(false),
+          error: (err: HttpErrorResponse) => {
+            this._loading.set(false);
+            this._error.set(this.parseError(err));
+          },
         });
       },
-      error: () => this._loading.set(false),
+      error: () => {
+        this._loading.set(false);
+        this._error.set('Could not connect to the server.');
+      },
     });
   }
 
@@ -86,9 +107,11 @@ export class AuthService {
       next: (res) => {
         this._user.set(res.user);
         this.isAuthenticated.set(true);
+        this._sessionChecked.set(true);
       },
       error: () => {
         this.isAuthenticated.set(false);
+        this._sessionChecked.set(true);
       },
     });
   }
@@ -98,5 +121,15 @@ export class AuthService {
     if (!user?.roles) return false;
     if (role === 'author') return user.roles.includes('admin') || user.roles.includes('author');
     return user.roles.includes(role);
+  }
+
+  private parseError(err: HttpErrorResponse): string {
+    if (err.status === 0) return 'Could not connect to the server.';
+    if (err.status === 401) return 'Invalid credentials.';
+    if (err.status === 422 && err.error?.errors) {
+      const messages = Object.values(err.error.errors) as string[];
+      return messages[0] ?? 'Validation failed.';
+    }
+    return err.error?.message ?? 'An error occurred.';
   }
 }

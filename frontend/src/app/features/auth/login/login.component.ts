@@ -15,15 +15,20 @@ export class LoginComponent {
 
   email = signal('');
   password = signal('');
-  error = signal('');
+  localError = signal('');
   readonly loading = this.auth.loading;
+  readonly serverError = this.auth.error;
 
   submit() {
-    this.error.set('');
-    if (!this.email() || !this.password()) {
-      this.error.set('Please fill in all fields.');
+    this.localError.set('');
+    if (!this.email().trim() || !this.password().trim()) {
+      this.localError.set('Please fill in all fields.');
       return;
     }
-    this.auth.login(this.email(), this.password());
+    this.auth.login(this.email().trim(), this.password());
+  }
+
+  get error(): string {
+    return this.localError() || this.serverError() || '';
   }
 }

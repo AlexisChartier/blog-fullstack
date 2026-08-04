@@ -12,11 +12,14 @@ describe('RegisterComponent', () => {
   let fixture: ComponentFixture<RegisterComponent>;
   let authSpy: jasmine.SpyObj<AuthService>;
   let loadingSignal: WritableSignal<boolean>;
+  let errorSignal: WritableSignal<string | null>;
 
   beforeEach(async () => {
     loadingSignal = signal(false);
+    errorSignal = signal(null);
     authSpy = jasmine.createSpyObj('AuthService', ['register'], {
       loading: loadingSignal.asReadonly(),
+      error: errorSignal.asReadonly(),
     });
 
     await TestBed.configureTestingModule({
@@ -44,7 +47,7 @@ describe('RegisterComponent', () => {
   });
 
   it('should start with no error', () => {
-    expect(component.error()).toBe('');
+    expect(component.error).toBe('');
   });
 
   it('should expose loading signal from auth service', () => {
@@ -60,12 +63,48 @@ describe('RegisterComponent', () => {
       component.passwordConfirmation.set('DifferentPassword!');
       component.submit();
 
-      expect(component.error()).toBe('Passwords do not match.');
+      expect(component.error).toBe('Passwords do not match.');
       expect(authSpy.register).not.toHaveBeenCalled();
     });
 
-    it('should clear previous error on submit', () => {
-      component.error.set('Previous error');
+    it('should set error when fields are empty', () => {
+      component.name.set('');
+      component.username.set('');
+      component.email.set('');
+      component.password.set('');
+      component.passwordConfirmation.set('');
+      component.submit();
+
+      expect(component.error).toBe('Please fill in all fields.');
+      expect(authSpy.register).not.toHaveBeenCalled();
+    });
+
+    it('should set error when name is empty', () => {
+      component.name.set('');
+      component.username.set('jane');
+      component.email.set('jane@example.com');
+      component.password.set('Password123!');
+      component.passwordConfirmation.set('Password123!');
+      component.submit();
+
+      expect(component.error).toBe('Please fill in all fields.');
+      expect(authSpy.register).not.toHaveBeenCalled();
+    });
+
+    it('should set error when password is too short', () => {
+      component.name.set('Jane');
+      component.username.set('jane');
+      component.email.set('jane@example.com');
+      component.password.set('Short1!');
+      component.passwordConfirmation.set('Short1!');
+      component.submit();
+
+      expect(component.error).toBe('Password must be at least 8 characters.');
+      expect(authSpy.register).not.toHaveBeenCalled();
+    });
+
+    it('should clear previous local error on submit', () => {
+      component.localError.set('Previous error');
       component.name.set('Jane');
       component.username.set('jane');
       component.email.set('jane@example.com');
@@ -73,13 +112,13 @@ describe('RegisterComponent', () => {
       component.passwordConfirmation.set('Password123!');
       component.submit();
 
-      expect(component.error()).toBe('');
+      expect(component.localError()).toBe('');
     });
 
-    it('should call auth.register with all fields when passwords match', () => {
-      component.name.set('Jane Doe');
-      component.username.set('jane_doe');
-      component.email.set('jane@example.com');
+    it('should call auth.register with trimmed fields when valid', () => {
+      component.name.set('  Jane Doe  ');
+      component.username.set('  jane_doe  ');
+      component.email.set('  jane@example.com  ');
       component.password.set('Password123!');
       component.passwordConfirmation.set('Password123!');
       component.submit();
@@ -90,17 +129,6 @@ describe('RegisterComponent', () => {
         'jane@example.com',
         'Password123!',
       );
-    });
-
-    it('should call auth.register even if name is empty (frontend only checks password match)', () => {
-      component.name.set('');
-      component.username.set('jane');
-      component.email.set('jane@example.com');
-      component.password.set('Password123!');
-      component.passwordConfirmation.set('Password123!');
-      component.submit();
-
-      expect(authSpy.register).toHaveBeenCalled();
     });
   });
 
@@ -136,15 +164,23 @@ describe('RegisterComponent', () => {
       expect(el.querySelector('button[type="submit"]')).toBeTruthy();
     });
 
-    it('should display error message when error signal is set', () => {
-      component.error.set('Passwords do not match.');
+    it('should display error message when localError is set', () => {
+      component.localError.set('Passwords do not match.');
       fixture.detectChanges();
       const el: HTMLElement = fixture.nativeElement;
       expect(el.textContent).toContain('Passwords do not match.');
     });
 
+    it('should display server error when auth error is set', () => {
+      errorSignal.set('Email already taken');
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.textContent).toContain('Email already taken');
+    });
+
     it('should not display error message when error is empty', () => {
-      component.error.set('');
+      component.localError.set('');
+      errorSignal.set(null);
       fixture.detectChanges();
       const el: HTMLElement = fixture.nativeElement;
       const errorBanner = el.querySelector('.bg-red-50');

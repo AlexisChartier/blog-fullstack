@@ -74,6 +74,10 @@ describe('AuthService', () => {
     it('should start with loading false', () => {
       expect(service.loading()).toBe(false);
     });
+
+    it('should set sessionChecked after initial fetchUser completes', () => {
+      expect(service.sessionChecked()).toBe(true);
+    });
   });
 
   describe('restoreSession (constructor)', () => {
@@ -119,7 +123,7 @@ describe('AuthService', () => {
       expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
     }));
 
-    it('should set loading false on login error', fakeAsync(() => {
+    it('should set loading false and error on login error', fakeAsync(() => {
       service.login('jane@example.com', 'wrong');
 
       const csrfReq = httpMock.expectOne('/sanctum/csrf-cookie');
@@ -135,9 +139,10 @@ describe('AuthService', () => {
       expect(service.loading()).toBe(false);
       expect(service.isAuthenticated()).toBe(false);
       expect(service.user()).toBeNull();
+      expect(service.error()).toBe('Invalid credentials.');
     }));
 
-    it('should set loading false if CSRF cookie fetch fails', fakeAsync(() => {
+    it('should set loading false and error if CSRF cookie fetch fails', fakeAsync(() => {
       service.login('jane@example.com', 'Password123!');
 
       const csrfReq = httpMock.expectOne('/sanctum/csrf-cookie');
@@ -146,6 +151,7 @@ describe('AuthService', () => {
       tick();
 
       expect(service.loading()).toBe(false);
+      expect(service.error()).toBe('Could not connect to the server.');
       httpMock.expectNone('/api/auth/login');
     }));
   });
@@ -186,7 +192,7 @@ describe('AuthService', () => {
       expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
     }));
 
-    it('should set loading false on register error', fakeAsync(() => {
+    it('should set loading false and error on register error', fakeAsync(() => {
       service.register('Jane', 'jane_doe', 'taken@example.com', 'Password123!');
 
       const csrfReq = httpMock.expectOne('/sanctum/csrf-cookie');
@@ -201,9 +207,10 @@ describe('AuthService', () => {
 
       expect(service.loading()).toBe(false);
       expect(service.isAuthenticated()).toBe(false);
+      expect(service.error()).toBeTruthy();
     }));
 
-    it('should set loading false if CSRF cookie fetch fails during register', fakeAsync(() => {
+    it('should set loading false and error if CSRF cookie fetch fails during register', fakeAsync(() => {
       service.register('Jane', 'jane_doe', 'jane@example.com', 'Password123!');
 
       const csrfReq = httpMock.expectOne('/sanctum/csrf-cookie');
@@ -212,6 +219,7 @@ describe('AuthService', () => {
       tick();
 
       expect(service.loading()).toBe(false);
+      expect(service.error()).toBe('Could not connect to the server.');
       httpMock.expectNone('/api/auth/register');
     }));
   });

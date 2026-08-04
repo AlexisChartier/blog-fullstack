@@ -18,15 +18,28 @@ export class RegisterComponent {
   email = signal('');
   password = signal('');
   passwordConfirmation = signal('');
-  error = signal('');
+  localError = signal('');
   readonly loading = this.auth.loading;
+  readonly serverError = this.auth.error;
 
   submit() {
-    this.error.set('');
-    if (this.password() !== this.passwordConfirmation()) {
-      this.error.set('Passwords do not match.');
+    this.localError.set('');
+    if (!this.name().trim() || !this.username().trim() || !this.email().trim() || !this.password().trim()) {
+      this.localError.set('Please fill in all fields.');
       return;
     }
-    this.auth.register(this.name(), this.username(), this.email(), this.password());
+    if (this.password() !== this.passwordConfirmation()) {
+      this.localError.set('Passwords do not match.');
+      return;
+    }
+    if (this.password().length < 8) {
+      this.localError.set('Password must be at least 8 characters.');
+      return;
+    }
+    this.auth.register(this.name().trim(), this.username().trim(), this.email().trim(), this.password());
+  }
+
+  get error(): string {
+    return this.localError() || this.serverError() || '';
   }
 }

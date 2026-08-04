@@ -1,7 +1,7 @@
 <div *ngIf="loading()" class="space-y-6">
   <div class="card p-8">
     <div class="flex items-start gap-6">
-      <div class="skeleton w-20 h-20 rounded-full"></div>
+      <div class="skeleton w-20 h-20 rounded-2xl"></div>
       <div class="flex-1 space-y-2">
         <div class="skeleton h-6 w-48"></div>
         <div class="skeleton h-4 w-24"></div>
@@ -13,39 +13,45 @@
 </div>
 
 <div *ngIf="user() as u" class="space-y-8 animate-fade-in">
-  <div class="card p-8 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800/50">
-    <div class="flex items-start gap-6 flex-wrap">
-      <div class="w-20 h-20 bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
-        {{ u.name.charAt(0) }}
-      </div>
-      <div class="flex-1 min-w-0">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ u.name }}</h1>
-        <p class="text-gray-500 dark:text-gray-400"><span>&#64;</span>{{ u.username }}</p>
-        <p *ngIf="u.bio" class="text-gray-700 dark:text-gray-300 mt-3 leading-relaxed">{{ u.bio }}</p>
-        <div class="flex flex-wrap gap-4 mt-4 text-sm text-gray-500 dark:text-gray-400">
-          <span class="flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            Joined {{ u.created_at | date: 'MMM y' }}
-          </span>
-          <span class="flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            {{ u.posts?.length || 0 }} posts
-          </span>
+  <!-- Profile header -->
+  <div class="card overflow-hidden p-0">
+    <!-- Gradient banner -->
+    <div class="h-24 bg-gradient-to-r from-primary-500 via-primary-600 to-accent-500"></div>
+    <div class="px-6 sm:px-8 pb-6">
+      <div class="flex items-start gap-5 flex-wrap -mt-12">
+        <div class="w-20 h-20 bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl flex items-center justify-center text-white text-3xl font-bold flex-shrink-0 ring-4 ring-white dark:ring-gray-900">
+          {{ u.name.charAt(0) }}
         </div>
-        <div *ngIf="u.roles?.length" class="flex gap-2 mt-3">
-          <span *ngFor="let role of u.roles" class="badge-accent capitalize">{{ role }}</span>
+        <div class="flex-1 min-w-0 pt-2">
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ u.name }}</h1>
+          <p class="text-gray-500 dark:text-gray-400"><span>&#64;</span>{{ u.username }}</p>
+          <p *ngIf="u.bio" class="text-gray-700 dark:text-gray-300 mt-3 leading-relaxed break-words">{{ u.bio }}</p>
+          <div class="flex flex-wrap gap-4 mt-4 text-sm text-gray-500 dark:text-gray-400">
+            <span class="flex items-center gap-1.5 whitespace-nowrap">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              Joined {{ u.created_at | date: 'MMM y' }}
+            </span>
+            <span class="flex items-center gap-1.5 whitespace-nowrap">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              {{ u.posts?.length || 0 }} posts
+            </span>
+          </div>
+          <div *ngIf="u.roles?.length" class="flex gap-2 mt-3">
+            <span *ngFor="let role of u.roles" class="badge-accent capitalize">{{ role }}</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Recent posts -->
   <div>
     <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Recent Posts</h2>
     <div class="space-y-4">
       <article *ngFor="let post of posts()" class="card-hover p-5 cursor-pointer" (click)="router.navigate(['/post', post.slug])">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ post.title }}</h3>
-        <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mt-2">
-          <span>{{ post.published_at | date: 'MMM d, y' }}</span>
+        <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mt-2 flex-wrap">
+          <span class="whitespace-nowrap">{{ post.published_at | date: 'MMM d, y' }}</span>
           <span *ngIf="post.categories?.length">·</span>
           <span *ngFor="let cat of post.categories" class="text-primary-600 dark:text-primary-400">{{ cat.name }}</span>
         </div>
