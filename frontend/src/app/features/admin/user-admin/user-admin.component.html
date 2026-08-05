@@ -41,9 +41,11 @@
           <td class="px-5 py-4 text-sm text-gray-500 dark:text-gray-400 hidden lg:table-cell">{{ user.comments_count ?? 0 }}</td>
           <td class="px-5 py-4">
             <select
+              [id]="'role-' + user.id"
               [value]="user.roles?.[0] ?? 'reader'"
               (change)="changeRole(user, $any($event.target).value)"
               class="input text-sm py-1.5 px-2 min-w-[100px]"
+              [attr.aria-label]="'Change role for ' + user.name"
             >
               <option value="admin">Admin</option>
               <option value="author">Author</option>
