@@ -7,6 +7,8 @@ export interface User {
   bio: string | null;
   roles?: string[];
   posts?: Post[];
+  posts_count?: number;
+  comments_count?: number;
   created_at: string;
 }
 
@@ -63,4 +65,16 @@ export interface Paginated<T> {
   to: number | null;
   prev_page_url: string | null;
   next_page_url: string | null;
+}
+
+export interface AdminStats {
+  users: number;
+  posts: number;
+  published_posts: number;
+  draft_posts: number;
+  comments: number;
+  approved_comments: number;
+  pending_comments: number;
+  categories: number;
+  tags: number;
 }

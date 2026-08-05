@@ -40,7 +40,17 @@ class PostController extends Controller
                 'author:id,name,username,avatar_url,bio',
                 'categories:id,name,slug',
                 'tags:id,name,slug',
-                'comments' => fn ($q) => $q->approved()->with('user:id,name,username,avatar_url')->orderByDesc('created_at'),
+                'comments' => fn ($q) => $q
+                    ->approved()
+                    ->whereNull('parent_id')
+                    ->with([
+                        'user:id,name,username,avatar_url',
+                        'replies' => fn ($rq) => $rq
+                            ->approved()
+                            ->with('user:id,name,username,avatar_url')
+                            ->orderBy('created_at'),
+                    ])
+                    ->orderByDesc('created_at'),
             ])
             ->firstOrFail();
 

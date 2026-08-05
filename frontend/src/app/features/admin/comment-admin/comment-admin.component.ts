@@ -17,6 +17,7 @@ export class CommentAdminComponent implements OnInit {
   loading = signal(true);
   currentPage = signal(1);
   lastPage = signal(1);
+  error = signal('');
 
   ngOnInit() {
     this.loadComments();
@@ -36,6 +37,7 @@ export class CommentAdminComponent implements OnInit {
   }
 
   toggleApproval(comment: Comment) {
+    this.error.set('');
     this.blogService.updateComment(comment.id, { is_approved: !comment.is_approved }).subscribe({
       next: (res) => {
         const updated = res.comment;
@@ -43,13 +45,16 @@ export class CommentAdminComponent implements OnInit {
           list.map(c => c.id === updated.id ? { ...c, is_approved: updated.is_approved } : c),
         );
       },
+      error: (err) => this.error.set(err.error?.message ?? 'Failed to update comment'),
     });
   }
 
   deleteComment(id: number) {
     if (!confirm('Are you sure you want to delete this comment?')) return;
+    this.error.set('');
     this.blogService.deleteComment(id).subscribe({
       next: () => this.loadComments(this.currentPage()),
+      error: (err) => this.error.set(err.error?.message ?? 'Failed to delete comment'),
     });
   }
 

@@ -221,7 +221,7 @@ describe('Auth - Session Management', function () {
         ])->assertOk();
 
         $roles = collect($response->json('user.roles'));
-        expect($roles->contains('name', 'reader'))->toBeTrue();
+        expect($roles->contains('reader'))->toBeTrue();
     });
 
     it('returns user with roles on register', function () {
@@ -234,7 +234,7 @@ describe('Auth - Session Management', function () {
         ])->assertCreated();
 
         $roles = collect($response->json('user.roles'));
-        expect($roles->contains('name', 'reader'))->toBeTrue();
+        expect($roles->contains('reader'))->toBeTrue();
     });
 
     it('returns user with roles on me endpoint', function () {
@@ -245,7 +245,7 @@ describe('Auth - Session Management', function () {
         $response = $this->getJson('/api/auth/me')->assertOk();
 
         $roles = collect($response->json('user.roles'));
-        expect($roles->contains('name', 'author'))->toBeTrue();
+        expect($roles->contains('author'))->toBeTrue();
     });
 });
 

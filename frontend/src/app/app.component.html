@@ -9,7 +9,7 @@
         </a>
         <div class="hidden md:flex md:space-x-1">
           <a routerLink="/" routerLinkActive="text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20" [routerLinkActiveOptions]="{ exact: true }" class="px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Home</a>
-          <a *ngIf="isAuthor" routerLink="/admin/posts" routerLinkActive="text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20" class="px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Dashboard</a>
+          <a *ngIf="isAuthor" [routerLink]="isAdmin ? '/admin' : '/admin/posts'" routerLinkActive="text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20" class="px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Dashboard</a>
         </div>
       </div>
 
@@ -49,9 +49,21 @@
                 <svg class="w-4 h-4 mr-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.156-.709-.271-2.11.884-2.811a1.724 1.724 0 002.573-1.066c.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.156.709 2.882-.217 2.882 1.268 0 .322-.045.634-.13.935l-.013.013A2.57 2.57 0 0021.999 12a2.57 2.57 0 002.573-1.066c.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 002.573-1.066c1.156-.709 2.882.217 2.882-1.268 0-.322-.045-.634-.13-.935"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 Settings
               </a>
-              <a *ngIf="isAuthor" routerLink="/admin/posts" (click)="closeMenus()" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline transition-colors">
+              <a *ngIf="isAdmin" routerLink="/admin" (click)="closeMenus()" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline transition-colors">
+                <svg class="w-4 h-4 mr-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                Dashboard
+              </a>
+              <a *ngIf="isAdmin" routerLink="/admin/posts/all" (click)="closeMenus()" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline transition-colors">
+                <svg class="w-4 h-4 mr-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                All Posts
+              </a>
+              <a *ngIf="isAuthor && !isAdmin" routerLink="/admin/posts" (click)="closeMenus()" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline transition-colors">
                 <svg class="w-4 h-4 mr-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 My Posts
+              </a>
+              <a *ngIf="isAdmin" routerLink="/admin/users" (click)="closeMenus()" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline transition-colors">
+                <svg class="w-4 h-4 mr-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                Users
               </a>
               <a *ngIf="isAdmin" routerLink="/admin/categories" (click)="closeMenus()" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline transition-colors">
                 <svg class="w-4 h-4 mr-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
@@ -91,8 +103,11 @@
   <div *ngIf="menuOpen()" class="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 animate-fade-in">
     <div class="px-4 py-3 space-y-1">
       <a routerLink="/" (click)="closeMenus()" class="block px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Home</a>
-      <a *ngIf="isAuthor" routerLink="/admin/posts" (click)="closeMenus()" class="block px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Dashboard</a>
+      <a *ngIf="isAdmin" routerLink="/admin" (click)="closeMenus()" class="block px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Dashboard</a>
+      <a *ngIf="isAdmin" routerLink="/admin/posts/all" (click)="closeMenus()" class="block px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">All Posts</a>
+      <a *ngIf="isAuthor && !isAdmin" routerLink="/admin/posts" (click)="closeMenus()" class="block px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">My Posts</a>
       <a *ngIf="isAuthor" routerLink="/admin/posts/new" (click)="closeMenus()" class="block px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">New Post</a>
+      <a *ngIf="isAdmin" routerLink="/admin/users" (click)="closeMenus()" class="block px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Users</a>
       <a *ngIf="isAdmin" routerLink="/admin/categories" (click)="closeMenus()" class="block px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Categories</a>
       <a *ngIf="isAdmin" routerLink="/admin/tags" (click)="closeMenus()" class="block px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Tags</a>
       <a *ngIf="isAdmin" routerLink="/admin/comments" (click)="closeMenus()" class="block px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 no-underline text-sm font-medium transition-all">Comments</a>

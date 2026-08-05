@@ -1,24 +1,22 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { RouterLink, Router } from '@angular/router';
 import { NgIf, NgFor, DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { BlogService } from '../../../core/services/blog.service';
 import { Post } from '../../../core/models';
 
 @Component({
-  selector: 'app-post-admin',
+  selector: 'app-all-posts',
   standalone: true,
   imports: [NgIf, NgFor, RouterLink, DatePipe],
-  templateUrl: './post-admin.component.html',
+  templateUrl: './all-posts.component.html',
 })
-export class PostAdminComponent implements OnInit {
+export class AllPostsComponent implements OnInit {
   private readonly blogService = inject(BlogService);
-  private readonly router = inject(Router);
 
   posts = signal<Post[]>([]);
   loading = signal(true);
   currentPage = signal(1);
   lastPage = signal(1);
-  error = signal('');
 
   ngOnInit() {
     this.loadPosts();
@@ -26,7 +24,7 @@ export class PostAdminComponent implements OnInit {
 
   loadPosts(page = 1) {
     this.loading.set(true);
-    this.blogService.getMyPosts(page).subscribe({
+    this.blogService.getAllPosts(page).subscribe({
       next: (res) => {
         this.posts.set(res.data);
         this.currentPage.set(res.current_page);
@@ -51,10 +49,8 @@ export class PostAdminComponent implements OnInit {
 
   deletePost(id: number) {
     if (!confirm('Are you sure you want to delete this post?')) return;
-    this.error.set('');
     this.blogService.deletePost(id).subscribe({
       next: () => this.loadPosts(this.currentPage()),
-      error: (err) => this.error.set(err.error?.message ?? 'Failed to delete post'),
     });
   }
 }

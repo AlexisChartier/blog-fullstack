@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Resources\PostResource;
+use App\Http\Resources\UserResource;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Registration successful',
-            'user' => $user->load('roles'),
+            'user' => UserResource::make($user->load('roles')),
         ], 201);
     }
 
@@ -37,7 +38,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login successful',
-            'user' => $user->load('roles'),
+            'user' => UserResource::make($user->load('roles')),
         ]);
     }
 
@@ -51,7 +52,7 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json([
-            'user' => $request->user()->load('roles'),
+            'user' => UserResource::make($request->user()->load('roles')),
         ]);
     }
 

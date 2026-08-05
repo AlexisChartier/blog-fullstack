@@ -13,11 +13,13 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'username' => $this->username,
-            'email' => $this->when($request->user()?->id === $this->id, $this->email),
+            'email' => $this->when($request->user()?->id === $this->id || $request->user()?->isAdmin(), $this->email),
             'avatar_url' => $this->avatar_url,
             'bio' => $this->bio,
             'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')),
             'posts' => PostResource::collection($this->whenLoaded('posts')),
+            'posts_count' => $this->when(isset($this->posts_count), $this->posts_count),
+            'comments_count' => $this->when(isset($this->comments_count), $this->comments_count),
             'created_at' => $this->created_at?->toISOString(),
         ];
     }

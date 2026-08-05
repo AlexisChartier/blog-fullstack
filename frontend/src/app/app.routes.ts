@@ -58,9 +58,19 @@ export const routes: Routes = [
     loadComponent: () => import('./features/profile/profile-edit/profile-edit.component').then(m => m.ProfileEditComponent),
   },
   {
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./features/admin/dashboard/dashboard.component').then(m => m.AdminDashboardComponent),
+  },
+  {
     path: 'admin/posts',
     canActivate: [authorGuard],
     loadComponent: () => import('./features/admin/post-admin/post-admin.component').then(m => m.PostAdminComponent),
+  },
+  {
+    path: 'admin/posts/all',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./features/admin/all-posts/all-posts.component').then(m => m.AllPostsComponent),
   },
   {
     path: 'admin/posts/new',
@@ -86,6 +96,11 @@ export const routes: Routes = [
     path: 'admin/comments',
     canActivate: [adminGuard],
     loadComponent: () => import('./features/admin/comment-admin/comment-admin.component').then(m => m.CommentAdminComponent),
+  },
+  {
+    path: 'admin/users',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./features/admin/user-admin/user-admin.component').then(m => m.UserAdminComponent),
   },
   {
     path: '**',

@@ -1,0 +1,50 @@
+<div class="space-y-6 animate-fade-in">
+  <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+
+  <div *ngIf="loading()" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div *ngFor="let i of [1,2,3,4,5]" class="card p-5">
+      <div class="skeleton h-4 w-20 mb-3"></div>
+      <div class="skeleton h-8 w-16"></div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading() && stats() as s" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <a routerLink="/admin/users" class="card p-5 hover:ring-2 hover:ring-primary-400 transition-all no-underline">
+      <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Users</p>
+      <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ s.users }}</p>
+    </a>
+    <a routerLink="/admin/posts/all" class="card p-5 hover:ring-2 hover:ring-primary-400 transition-all no-underline">
+      <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Posts</p>
+      <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ s.posts }}</p>
+      <p class="text-xs text-gray-400 mt-1">{{ s.published_posts }} published / {{ s.draft_posts }} drafts</p>
+    </a>
+    <a routerLink="/admin/comments" class="card p-5 hover:ring-2 hover:ring-primary-400 transition-all no-underline">
+      <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Comments</p>
+      <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ s.comments }}</p>
+      <p class="text-xs mt-1" [class.text-amber-500]="s.pending_comments > 0" [class.text-gray-400]="s.pending_comments === 0">{{ s.pending_comments }} pending</p>
+    </a>
+    <a routerLink="/admin/categories" class="card p-5 hover:ring-2 hover:ring-primary-400 transition-all no-underline">
+      <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Categories</p>
+      <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ s.categories }}</p>
+    </a>
+    <a routerLink="/admin/tags" class="card p-5 hover:ring-2 hover:ring-primary-400 transition-all no-underline">
+      <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Tags</p>
+      <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ s.tags }}</p>
+    </a>
+  </div>
+
+  <div *ngIf="!loading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+    <a routerLink="/admin/posts/all" class="card p-5 hover:ring-2 hover:ring-primary-400 transition-all no-underline">
+      <h3 class="font-bold text-gray-900 dark:text-white mb-1">All Posts</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Manage all posts from all authors</p>
+    </a>
+    <a routerLink="/admin/comments" class="card p-5 hover:ring-2 hover:ring-primary-400 transition-all no-underline">
+      <h3 class="font-bold text-gray-900 dark:text-white mb-1">Comment Moderation</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Review and moderate comments</p>
+    </a>
+    <a routerLink="/admin/users" class="card p-5 hover:ring-2 hover:ring-primary-400 transition-all no-underline">
+      <h3 class="font-bold text-gray-900 dark:text-white mb-1">User Management</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Manage user roles and permissions</p>
+    </a>
+  </div>
+</div>

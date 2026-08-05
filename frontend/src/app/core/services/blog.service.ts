@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Category, Comment, Paginated, Post, Tag } from '../models';
+import { AdminStats, Category, Comment, Paginated, Post, Tag, User } from '../models';
 import { API_URL } from '../tokens/api-url.token';
 import { map } from 'rxjs';
 
@@ -109,5 +109,25 @@ export class BlogService {
 
   deleteComment(id: number) {
     return this.http.delete(`${this.apiUrl}/comments/${id}`);
+  }
+
+  getAdminStats() {
+    return this.http.get<{ data: AdminStats }>(`${this.apiUrl}/admin/stats`).pipe(
+      map(res => res.data),
+    );
+  }
+
+  getAllPosts(page = 1) {
+    const params = new HttpParams().set('page', page);
+    return this.http.get<Paginated<Post>>(`${this.apiUrl}/admin/posts`, { params });
+  }
+
+  getUsers(page = 1) {
+    const params = new HttpParams().set('page', page);
+    return this.http.get<Paginated<User>>(`${this.apiUrl}/admin/users`, { params });
+  }
+
+  updateUserRole(userId: number, role: string) {
+    return this.http.put<{ message: string; user: User }>(`${this.apiUrl}/admin/users/${userId}/role`, { role });
   }
 }

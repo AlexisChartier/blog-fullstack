@@ -147,6 +147,13 @@ class DatabaseSeeder extends Seeder
             $post->categories()->attach($categories->random(1)->pluck('id'));
             $post->tags()->attach($tags->random(2)->pluck('id'));
         });
+
+        $commenters = $allUsers->merge($readers);
+        Comment::factory(30)
+            ->recycle($publishedPosts)
+            ->recycle($commenters)
+            ->unapproved()
+            ->create();
     }
 
     private function seedRolesAndPermissions(): void

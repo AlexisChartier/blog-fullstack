@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\AdminPostController;
+use App\Http\Controllers\Api\AdminStatsController;
+use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CommentController;
@@ -56,4 +59,10 @@ Route::middleware(['web', 'auth', 'single.session'])->group(function () {
 
     // Profile
     Route::put('/profile', [ProfileController::class, 'update']);
+
+    // Admin dashboard
+    Route::get('/admin/stats', AdminStatsController::class);
+    Route::get('/admin/posts', [AdminPostController::class, 'index']);
+    Route::get('/admin/users', [AdminUserController::class, 'index']);
+    Route::put('/admin/users/{user}/role', [AdminUserController::class, 'updateRole']);
 });
