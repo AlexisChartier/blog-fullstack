@@ -2,15 +2,15 @@
 
 namespace App\Actions;
 
+use App\Http\Requests\Api\StorePostRequest;
 use App\Models\Post;
-use Illuminate\Http\Request;
 
 class CreatePost
 {
-    public function execute(Request $request): Post
+    public function execute(StorePostRequest $request): Post
     {
         /** @var Post $post */
-        $post = $request->user()->posts()->create($request->except(['categories', 'tags']));
+        $post = $request->user()->posts()->create($request->safe()->except(['categories', 'tags']));
 
         if ($categories = $request->input('categories')) {
             $post->categories()->sync($categories);

@@ -26,6 +26,13 @@ class AdminUserController extends Controller
 
     public function updateRole(UpdateUserRoleRequest $request, User $user): JsonResponse
     {
+        abort_if($user->is($request->user()), 403, 'Cannot change your own role');
+
+        if ($user->isAdmin() && $request->validated('role') !== 'admin') {
+            $adminCount = User::role('admin')->count();
+            abort_if($adminCount <= 1, 403, 'Cannot demote the last admin');
+        }
+
         $user->syncRoles([$request->validated('role')]);
 
         return response()->json([

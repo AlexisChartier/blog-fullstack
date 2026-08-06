@@ -21,7 +21,6 @@ class Post extends Model
         'content',
         'featured_image',
         'status',
-        'author_id',
         'published_at',
     ];
 

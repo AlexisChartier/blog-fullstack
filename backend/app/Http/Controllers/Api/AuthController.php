@@ -70,7 +70,7 @@ class AuthController extends Controller
 
     public function myPost(Request $request, Post $post): JsonResponse
     {
-        abort_unless($post->author_id === $request->user()->id || $request->user()->isAdmin(), 403);
+        abort_unless($request->user()->isAdmin() || ($post->author_id === $request->user()->id && $request->user()->isAuthor()), 403);
 
         $post->load(['categories:id,name,slug', 'tags:id,name,slug']);
 

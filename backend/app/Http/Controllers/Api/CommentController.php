@@ -26,6 +26,8 @@ class CommentController extends Controller
 
     public function store(StoreCommentRequest $request, Post $post): JsonResponse
     {
+        abort_unless($post->status === 'published' && $post->published_at?->isPast(), 404);
+
         $comment = $post->comments()->create([
             ...$request->validated(),
             'user_id' => $request->user()->id,

@@ -2,14 +2,14 @@
 
 namespace App\Actions;
 
+use App\Http\Requests\Api\UpdatePostRequest;
 use App\Models\Post;
-use Illuminate\Http\Request;
 
 class UpdatePost
 {
-    public function execute(Post $post, Request $request): Post
+    public function execute(Post $post, UpdatePostRequest $request): Post
     {
-        $post->update($request->except(['categories', 'tags']));
+        $post->update($request->safe()->except(['categories', 'tags']));
 
         if ($request->has('categories')) {
             $post->categories()->sync($request->input('categories'));

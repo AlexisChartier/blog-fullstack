@@ -15,7 +15,7 @@ class TagController extends Controller
     public function index(): AnonymousResourceCollection
     {
         return TagResource::collection(
-            Tag::withCount('posts')->orderBy('name')->get()
+            Tag::withCount(['posts as posts_count' => fn ($q) => $q->published()])->orderBy('name')->get()
         );
     }
 

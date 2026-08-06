@@ -11,7 +11,9 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserPostController;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/test', fn (Request $request) => response()->json(['status' => 'ok', 'message' => 'API is running']));
@@ -25,12 +27,16 @@ Route::get('/users/{username}', [UserController::class, 'show'])->where('usernam
 Route::get('/users/{username}/posts', [UserPostController::class, 'index'])->where('username', '[a-zA-Z0-9_]+');
 
 // Auth routes
-Route::post('/auth/register', [AuthController::class, 'register'])->middleware('web');
-Route::post('/auth/login', [AuthController::class, 'login'])->middleware('web');
-Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware(['web', 'auth']);
-Route::get('/auth/me', [AuthController::class, 'me'])->middleware(['web', 'auth']);
-Route::get('/auth/my-posts', [AuthController::class, 'myPosts'])->middleware(['web', 'auth']);
-Route::get('/auth/my-posts/{post}', [AuthController::class, 'myPost'])->middleware(['web', 'auth']);
+RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by($request->input('email').'|'.$request->ip()));
+
+RateLimiter::for('register', fn (Request $request) => Limit::perMinute(3)->by($request->ip()));
+
+Route::post('/auth/register', [AuthController::class, 'register'])->middleware(['web', 'throttle:register']);
+Route::post('/auth/login', [AuthController::class, 'login'])->middleware(['web', 'throttle:login']);
+Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware(['web', 'auth', 'single.session']);
+Route::get('/auth/me', [AuthController::class, 'me'])->middleware(['web', 'auth', 'single.session']);
+Route::get('/auth/my-posts', [AuthController::class, 'myPosts'])->middleware(['web', 'auth', 'single.session']);
+Route::get('/auth/my-posts/{post}', [AuthController::class, 'myPost'])->middleware(['web', 'auth', 'single.session']);
 
 // Authenticated routes
 Route::middleware(['web', 'auth', 'single.session'])->group(function () {

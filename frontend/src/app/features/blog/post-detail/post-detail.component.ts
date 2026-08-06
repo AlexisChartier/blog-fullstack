@@ -4,6 +4,7 @@ import { NgIf, NgFor, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { BlogService } from '../../../core/services/blog.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Post } from '../../../core/models';
@@ -35,7 +36,7 @@ export class PostDetailComponent implements OnInit {
       if (data['post']) {
         const post = data['post'] as Post;
         this.post.set(post);
-        this.renderedContent.set(marked.parse(post.content) as string);
+        this.renderedContent.set(DOMPurify.sanitize(marked.parse(post.content) as string));
         this.title.setTitle(`${post.title} — DevBlog`);
         this.meta.updateTag({ name: 'description', content: post.excerpt ?? post.title });
         this.loading.set(false);
@@ -48,7 +49,7 @@ export class PostDetailComponent implements OnInit {
     this.blogService.getPost(slug).subscribe({
       next: (post) => {
         this.post.set(post);
-        this.renderedContent.set(marked.parse(post.content) as string);
+        this.renderedContent.set(DOMPurify.sanitize(marked.parse(post.content) as string));
         this.title.setTitle(`${post.title} — DevBlog`);
         this.meta.updateTag({ name: 'description', content: post.excerpt ?? post.title });
         this.loading.set(false);

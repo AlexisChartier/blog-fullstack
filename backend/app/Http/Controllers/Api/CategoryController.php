@@ -15,7 +15,7 @@ class CategoryController extends Controller
     public function index(): AnonymousResourceCollection
     {
         return CategoryResource::collection(
-            Category::withCount('posts')->orderBy('name')->get()
+            Category::withCount(['posts as posts_count' => fn ($q) => $q->published()])->orderBy('name')->get()
         );
     }
 

@@ -306,7 +306,7 @@ describe('Auth - My Posts', function () {
 
 describe('Auth - My Post (single)', function () {
     it('returns a single post by id for the authenticated user', function () {
-        $user = User::factory()->create();
+        $user = authorUser();
         $post = Post::factory()->create(['author_id' => $user->id, 'status' => 'draft']);
         $this->actingAs($user);
 
@@ -317,8 +317,8 @@ describe('Auth - My Post (single)', function () {
     });
 
     it('returns 403 when accessing another user post', function () {
-        $user = User::factory()->create();
-        $other = User::factory()->create();
+        $user = authorUser();
+        $other = authorUser();
         $post = Post::factory()->create(['author_id' => $other->id]);
         $this->actingAs($user);
 
@@ -328,7 +328,7 @@ describe('Auth - My Post (single)', function () {
 
     it('allows admin to access any post', function () {
         $admin = adminUser();
-        $other = User::factory()->create();
+        $other = authorUser();
         $post = Post::factory()->create(['author_id' => $other->id]);
         $this->actingAs($admin);
 
@@ -338,7 +338,7 @@ describe('Auth - My Post (single)', function () {
     });
 
     it('eager loads categories and tags', function () {
-        $user = User::factory()->create();
+        $user = authorUser();
         $post = Post::factory()->create(['author_id' => $user->id]);
         $category = Category::factory()->create();
         $tag = Tag::factory()->create();
